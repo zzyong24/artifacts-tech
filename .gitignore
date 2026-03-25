@@ -9,3 +9,6 @@ Thumbs.db
 # 日志
 *.log
 nohup.out
+
+# 本机配置（路径因机器不同，不提交）
+.claude/artifacts.config.json

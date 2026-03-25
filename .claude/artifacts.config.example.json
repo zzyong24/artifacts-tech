@@ -1,0 +1,9 @@
+{
+  "_comment": "复制此文件为 artifacts.config.json，填入本机的实际路径，不要提交 artifacts.config.json",
+  "prompts": {
+    "script": "~/path/to/AI教学口播稿生成器.md",
+    "slides": "~/path/to/AI教学动画生成器.md"
+  },
+  "works_dir": "works",
+  "server_port": 8080
+}
