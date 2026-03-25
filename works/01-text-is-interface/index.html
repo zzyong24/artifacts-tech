@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>文本是知识的接口</title>
+  <script src="./gsap.min.js"></script>
+  <style>
+    :root {
+      --bg: #faf8f3;
+      --surface: #f0ece3;
+      --surface-2: #e8e3d8;
+      --ink: #1c1a16;
+      --ink-dim: #7a7670;
+      --accent: #b5700f;
+      --accent-2: #2a6ea8;
+      --accent-3: #2a8a5a;
+      --accent-4: #c43a2a;
+      --line: rgba(28,26,22,0.12);
+      --font-body: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+      --font-mono: 'SF Mono', 'Cascadia Code', 'Consolas', 'Menlo', monospace;
+      /* 固定 px，基于 1920px 画布，不受 vw 影响 */
+      --size-hero: 88px;
+      --size-h1: 56px;
+      --size-h2: 38px;
+      --size-body: 26px;
+      --size-label: 18px;
+      --radius: 16px;
+      --radius-sm: 8px;
+      --pad: 96px;
+      --gap: 36px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 100%; height: 100%;
+      background: #e8e3d8;
+      overflow: hidden;
+      font-family: var(--font-body);
+    }
+
+    /* ── Responsive scale wrapper ── */
+    #scale-root {
+      width: 1920px;
+      height: 1080px;
+      position: absolute;
+      top: 0;
+      left: 0;
+      transform-origin: top left;
+    }
+
+    /* ── Deck ── */
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      position: absolute;
+      top: 0; left: 0;
+      background: var(--bg);
+      overflow: hidden;
+      display: none;
+    }
+    .slide.current { display: flex; flex-direction: column; }
+
+    /* ── Common layout ── */
+    .topic-label {
+      position: absolute;
+      top: 48px; left: 64px;
+      font-family: var(--font-mono);
+      font-size: var(--size-label);
+      color: var(--ink-dim);
+      letter-spacing: 0.08em;
+    }
+    .nav-hint {
+      position: absolute;
+      bottom: 48px; right: 64px;
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: var(--ink-dim);
+      opacity: 0.5;
+    }
+    .slide-counter {
+      position: absolute;
+      bottom: 48px; left: 64px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--ink-dim);
+      opacity: 0.4;
+    }
+    .center-content {
+      margin: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      width: 100%;
+      padding: 120px var(--pad);
+    }
+
+    /* ── Shared text ── */
+    .slide-title {
+      font-size: var(--size-h1);
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+    .slide-title em {
+      font-style: normal;
+      color: var(--accent);
+    }
+    .body-text {
+      font-size: var(--size-body);
+      color: var(--ink-dim);
+      line-height: 1.8;
+      max-width: 980px;
+    }
+    .body-text strong {
+      color: var(--ink);
+      font-weight: 500;
+    }
+    .accent-word {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* ═══════════════════════════════
+       SLIDE 1: 开场锚点
+    ═══════════════════════════════ */
+    #s1 .line-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    #s1 .line {
+      font-size: var(--size-h2);
+      color: var(--ink);
+      font-weight: 400;
+      line-height: 1.5;
+      opacity: 0;
+      visibility: hidden;
+    }
+    #s1 .line.dim { color: var(--ink-dim); }
+    #s1 .line.punch {
+      font-size: var(--size-h1);
+      font-weight: 600;
+      color: var(--ink);
+      margin-top: 20px;
+    }
+    #s1 .line .acc { color: var(--accent); }
+
+    /* ═══════════════════════════════
+       SLIDE 2: 问题前置
+    ═══════════════════════════════ */
+    #s2 .question-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+      max-width: 1100px;
+    }
+    #s2 .q-label {
+      font-family: var(--font-mono);
+      font-size: var(--size-label);
+      color: var(--ink-dim);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      opacity: 0; visibility: hidden;
+    }
+    #s2 .q-main {
+      font-size: var(--size-h1);
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.4;
+      opacity: 0; visibility: hidden;
+    }
+    #s2 .q-answer {
+      font-size: clamp(40px, 5vw, 80px);
+      font-weight: 700;
+      color: var(--accent);
+      opacity: 0; visibility: hidden;
+      letter-spacing: -0.02em;
+    }
+    #s2 .q-note {
+      font-size: var(--size-body);
+      color: var(--ink-dim);
+      opacity: 0; visibility: hidden;
+      max-width: 720px;
+      line-height: 1.7;
+    }
+
+    /* ═══════════════════════════════
+       SLIDE 3: 类比——接口是什么
+    ═══════════════════════════════ */
+    #s3 .analogy-layout {
+      display: flex;
+      align-items: center;
+      gap: 80px;
+      max-width: 1400px;
+      width: 100%;
+    }
+    #s3 .card {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 48px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      opacity: 0; visibility: hidden;
+    }
+    #s3 .card .card-icon { font-size: 48px; }
+    #s3 .card .card-title {
+      font-size: var(--size-h2);
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.3;
+    }
+    #s3 .card .card-desc {
+      font-size: var(--size-body);
+      color: var(--ink-dim);
+      line-height: 1.7;
+    }
+    #s3 .card.highlight-card { border-color: var(--accent); }
+    #s3 .card.highlight-card .card-title { color: var(--accent); }
+
+    /* SVG 连线 */
+    #s3 .connector-svg {
+      width: 120px; flex-shrink: 0;
+      opacity: 0; visibility: hidden;
+    }
+
+    #s3 .story-quote {
+      max-width: 900px;
+      font-size: var(--size-body);
+      color: var(--ink-dim);
+      line-height: 1.8;
+      border-left: 3px solid var(--accent);
+      padding-left: 28px;
+      text-align: left;
+      opacity: 0; visibility: hidden;
+      margin-bottom: 40px;
+    }
+    #s3 .story-quote strong { color: var(--ink); }
+
+    /* ═══════════════════════════════
+       SLIDE 4: 第一层——你与知识
+    ═══════════════════════════════ */
+    #s4 .flip-stage {
+      perspective: 1200px;
+      width: 700px; height: 380px;
+      margin-bottom: 48px;
+      opacity: 0; visibility: hidden;
+    }
+    #s4 .flip-inner {
+      width: 100%; height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s ease;
+    }
+    #s4 .flip-inner.flipped { transform: rotateY(180deg); }
+    #s4 .flip-face {
+      position: absolute; inset: 0;
+      backface-visibility: hidden;
+      border-radius: var(--radius);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 40px;
+      gap: 16px;
+    }
+    #s4 .flip-front {
+      background: var(--surface);
+      border: 1px solid var(--line);
+    }
+    #s4 .flip-back {
+      background: var(--surface-2);
+      border: 1px solid rgba(181,112,15,0.35);
+      transform: rotateY(180deg);
+    }
+    #s4 .flip-face .f-label {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--ink-dim);
+      letter-spacing: 0.1em;
+    }
+    #s4 .flip-face .f-title {
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--ink);
+      text-align: center;
+    }
+    #s4 .flip-face .f-desc {
+      font-size: 18px;
+      color: var(--ink-dim);
+      text-align: center;
+      line-height: 1.6;
+    }
+    #s4 .flip-back .f-title { color: var(--accent); }
+    #s4 .flip-tip {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--ink-dim);
+      opacity: 0; visibility: hidden;
+      margin-top: -24px;
+      margin-bottom: 32px;
+    }
+    #s4 .conclusion {
+      font-size: var(--size-h2);
+      font-weight: 500;
+      color: var(--ink);
+      max-width: 900px;
+      line-height: 1.6;
+      opacity: 0; visibility: hidden;
+    }
+    #s4 .conclusion .acc { color: var(--accent); }
+
+    /* ═══════════════════════════════
+       SLIDE 5: 第二层——AI 与知识
+    ═══════════════════════════════ */
+    #s5 .flow-layout {
+      display: flex;
+      flex-direction: column;
+      gap: 48px;
+      max-width: 1200px;
+      width: 100%;
+    }
+    #s5 .flow-row {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      opacity: 0; visibility: hidden;
+    }
+    #s5 .flow-node {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 28px 40px;
+      font-size: 26px;
+      color: var(--ink-dim);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    #s5 .flow-arrow {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      position: relative;
+    }
+    #s5 .flow-arrow svg { width: 100%; height: 28px; overflow: visible; }
+    #s5 .flow-label {
+      position: absolute;
+      top: -26px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--font-mono);
+      font-size: 16px;
+      color: var(--ink-dim);
+      white-space: nowrap;
+      background: var(--bg);
+      padding: 0 10px;
+    }
+    #s5 .flow-node.accent-node {
+      border-color: rgba(181,112,15,0.4);
+      color: var(--accent);
+    }
+    #s5 .flow-node.bad { border-color: rgba(196,58,42,0.4); color: var(--accent-4); }
+    #s5 .row-label {
+      width: 200px;
+      font-family: var(--font-mono);
+      font-size: 18px;
+      color: var(--ink-dim);
+      flex-shrink: 0;
+      margin-right: 24px;
+    }
+    #s5 .verdict {
+      font-size: var(--size-h2);
+      font-weight: 500;
+      color: var(--ink);
+      max-width: 900px;
+      line-height: 1.6;
+      opacity: 0; visibility: hidden;
+      text-align: center;
+    }
+    #s5 .verdict .acc { color: var(--accent); }
+    #s5 .verdict .dim { color: var(--ink-dim); }
+
+    /* ═══════════════════════════════
+       SLIDE 6: 第三层——现在与未来
+    ═══════════════════════════════ */
+    #s6 .timeline-layout {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      max-width: 1300px;
+      width: 100%;
+      margin-bottom: 48px;
+    }
+    #s6 .tl-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      opacity: 0; visibility: hidden;
+    }
+    #s6 .tl-col.divider {
+      flex: 0 0 2px;
+      background: var(--line);
+      margin: 0 40px;
+      opacity: 0; visibility: hidden;
+    }
+    #s6 .tl-header {
+      font-family: var(--font-mono);
+      font-size: var(--size-label);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 32px;
+    }
+    #s6 .tl-col:first-child .tl-header { color: var(--accent-4); }
+    #s6 .tl-col:last-child .tl-header { color: var(--accent-3); }
+    #s6 .tl-item {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+    #s6 .tl-dot {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 10px;
+    }
+    #s6 .tl-col:first-child .tl-dot { background: var(--accent-4); }
+    #s6 .tl-col:last-child .tl-dot { background: var(--accent-3); }
+    #s6 .tl-text {
+      font-size: 24px;
+      color: var(--ink-dim);
+      line-height: 1.7;
+    }
+    #s6 .tl-text strong { color: var(--ink); font-weight: 500; }
+    #s6 .conclusion {
+      font-size: var(--size-h2);
+      font-weight: 500;
+      color: var(--ink);
+      max-width: 900px;
+      line-height: 1.6;
+      opacity: 0; visibility: hidden;
+      text-align: center;
+    }
+    #s6 .conclusion .acc { color: var(--accent-3); }
+
+    /* ═══════════════════════════════
+       SLIDE 7: 哲学延伸
+    ═══════════════════════════════ */
+    #s7 .phil-layout {
+      max-width: 1000px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 48px;
+    }
+    #s7 .myth {
+      font-size: var(--size-h2);
+      color: var(--ink-dim);
+      line-height: 1.6;
+      text-align: center;
+      opacity: 0; visibility: hidden;
+    }
+    #s7 .myth-cross {
+      width: 160px;
+      height: 2px;
+      background: var(--accent-4);
+      transform: scaleX(0);
+      transform-origin: left;
+    }
+    #s7 .truth {
+      font-size: var(--size-h1);
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.5;
+      text-align: center;
+      opacity: 0; visibility: hidden;
+    }
+    #s7 .truth .acc { color: var(--accent); }
+    #s7 .truth-note {
+      font-size: var(--size-body);
+      color: var(--ink-dim);
+      line-height: 1.8;
+      text-align: center;
+      max-width: 780px;
+      opacity: 0; visibility: hidden;
+    }
+
+    /* ═══════════════════════════════
+       SLIDE 8: 4 步方法
+    ═══════════════════════════════ */
+    #s8 .steps-layout {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      max-width: 1000px;
+      width: 100%;
+      position: relative;
+    }
+    #s8 .steps-layout::before {
+      content: '';
+      position: absolute;
+      left: 35px; top: 64px; bottom: 64px;
+      width: 1px;
+      background: var(--line);
+    }
+    #s8 .step {
+      display: flex;
+      gap: 40px;
+      padding-bottom: 44px;
+      opacity: 0; visibility: hidden;
+    }
+    #s8 .step-num {
+      width: 70px; height: 70px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--accent);
+      flex-shrink: 0;
+      position: relative; z-index: 1;
+    }
+    #s8 .step-body { padding-top: 16px; }
+    #s8 .step-body h4 {
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 10px;
+    }
+    #s8 .step-body p {
+      font-size: 22px;
+      color: var(--ink-dim);
+      line-height: 1.6;
+    }
+    #s8 .step-body code {
+      font-family: var(--font-mono);
+      font-size: 18px;
+      color: var(--accent-3);
+      background: var(--surface);
+      border: 1px solid var(--line);
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      display: inline-block;
+      margin-top: 8px;
+    }
+
+    /* ═══════════════════════════════
+       SLIDE 9: 收尾行动
+    ═══════════════════════════════ */
+    #s9 .cta-layout {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 40px;
+      max-width: 1000px;
+    }
+    #s9 .cta-strike {
+      font-size: var(--size-h2);
+      color: var(--ink-dim);
+      text-decoration: line-through;
+      text-decoration-color: var(--accent-4);
+      opacity: 0; visibility: hidden;
+    }
+    #s9 .cta-truth {
+      font-size: var(--size-h1);
+      font-weight: 600;
+      color: var(--ink);
+      text-align: center;
+      line-height: 1.4;
+      opacity: 0; visibility: hidden;
+    }
+    #s9 .cta-truth .acc { color: var(--accent); }
+    #s9 .cta-gift {
+      font-size: var(--size-body);
+      color: var(--ink-dim);
+      text-align: center;
+      line-height: 1.7;
+      max-width: 700px;
+      opacity: 0; visibility: hidden;
+    }
+    #s9 .cta-action {
+      border: 1px solid rgba(181,112,15,0.35);
+      border-radius: var(--radius);
+      padding: 28px 48px;
+      font-size: var(--size-body);
+      color: var(--ink-dim);
+      text-align: center;
+      line-height: 1.7;
+      max-width: 700px;
+      opacity: 0; visibility: hidden;
+    }
+    #s9 .cta-action strong { color: var(--accent); }
+
+    /* ── Pulse on CTA node ── */
+    .pulse-dot {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: inline-block;
+      margin-right: 10px;
+      vertical-align: middle;
+    }
+
+  </style>
+</head>
+<body>
+
+<div id="scale-root">
+
+  <!-- ══════════ SLIDE 1: 开场锚点 ══════════ -->
+  <div class="slide current" id="s1" data-slide="1">
+    <div class="topic-label">// 知识管理 · 01</div>
+    <div class="slide-counter" id="ctr1">1 / 9</div>
+    <div class="nav-hint">click to continue →</div>
+    <div class="center-content">
+      <div class="line-group">
+        <div class="line dim" id="l1a">你有没有过这种感觉——</div>
+        <div class="line" id="l1b">刷了一下午知识博主。<br>当时句句在说自己。转头全忘了。</div>
+        <div class="line dim" id="l1c">收藏夹越存越满，再也没打开过。</div>
+        <div class="line dim" id="l1d">AI 工具用了一个又一个，越学越焦虑。</div>
+        <div class="line punch" id="l1e">我们从一开始，就<span class="acc">选错了</span>知识的载体。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ SLIDE 2: 问题前置 ══════════ -->
+  <div class="slide" id="s2" data-slide="2">
+    <div class="topic-label">// 知识管理 · 02</div>
+    <div class="slide-counter">2 / 9</div>
+    <div class="nav-hint">click to continue →</div>
+    <div class="center-content">
+      <div class="question-block">
+        <div class="q-label" id="q-label">今天只讲一件事</div>
+        <div class="q-main" id="q-main">在大模型时代，什么才是知识真正的载体？</div>
+        <div class="q-answer" id="q-answer">文本。</div>
+        <div class="q-note" id="q-note">不是视频，不是音频，不是图片。<br>是文本。这个最古老的东西，也是最被低估的东西。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ SLIDE 3: 类比——接口 ══════════ -->
+  <div class="slide" id="s3" data-slide="3">
+    <div class="topic-label">// 知识管理 · 03</div>
+    <div class="slide-counter">3 / 9</div>
+    <div class="nav-hint">click to continue →</div>
+    <div class="center-content" style="gap:40px;">
+      <div class="story-quote" id="s3-quote">
+        我做「灵犀」这个产品时发现：用户每天产出大量视频笔记，<br>
+        但真正想用的时候——找不到，或者找到了也用不了。<br>
+        <strong>问题出在哪里？选错了载体。</strong>
+      </div>
+      <div class="analogy-layout" id="s3-layout">
+        <div class="card" id="c-left">
+          <div class="card-icon">📹</div>
+          <div class="card-title">视频 / 音频 / 图片</div>
+          <div class="card-desc" style="color:var(--accent-4)">传播形式</div>
+          <div class="card-desc">快速接收信息<br>线性、被动<br>无法二次加工</div>
+        </div>
+        <svg class="connector-svg" id="c-arrow" viewBox="0 0 120 60">
+          <defs>
+            <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="var(--accent)" />
+            </marker>
+          </defs>
+          <line x1="10" y1="30" x2="105" y2="30"
+            stroke="var(--accent)" stroke-width="1.5"
+            marker-end="url(#arrowhead)"
+            stroke-dasharray="200" stroke-dashoffset="200"
+            id="arrow-line" />
+          <text x="60" y="20" text-anchor="middle" fill="var(--ink-dim)" font-size="11" font-family="var(--font-mono)">接口</text>
+        </svg>
+        <div class="card highlight-card" id="c-right">
+          <div class="card-icon">📝</div>
+          <div class="card-title">文本</div>
+          <div class="card-desc" style="color:var(--accent)">通用接口</div>
+          <div class="card-desc">可暂停、可标注<br>可拆解、可重组<br>AI 的原生语言</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ SLIDE 4: 第一层——你与知识 ══════════ -->
+  <div class="slide" id="s4" data-slide="4">
+    <div class="topic-label">// 知识管理 · 04 · 第一层</div>
+    <div class="slide-counter">4 / 9</div>
+    <div class="nav-hint">click to continue →</div>
+    <div class="center-content" style="gap:32px;">
+      <div class="slide-title" id="s4-title" style="opacity:0;visibility:hidden;">
+        文本，是你和知识的<em>对话接口</em>
+      </div>
+      <div class="flip-stage" id="s4-flip">
+        <div class="flip-inner" id="s4-inner">
+          <div class="flip-face flip-front">
+            <div class="f-label">视频</div>
+            <div class="f-title">被动接收</div>
+            <div class="f-desc">博主的节奏就是你的节奏<br>没有时间停下来拆解</div>
+          </div>
+          <div class="flip-face flip-back">
+            <div class="f-label">文本</div>
+            <div class="f-title">主动对话</div>
+            <div class="f-desc" style="color:var(--ink-dim);">可暂停 · 可标注 · 可追问<br>和知识产生真正的连接</div>
+          </div>
+        </div>
+      </div>
+      <div class="flip-tip" id="s4-tip">← 点击翻转 →</div>
+      <div class="conclusion" id="s4-conc">
+        视频让你<span class="acc">看见</span>知识 &nbsp;·&nbsp; 文本让你<span class="acc">走进</span>知识
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ SLIDE 5: 第二层——AI 与知识 ══════════ -->
+  <div class="slide" id="s5" data-slide="5">
+    <div class="topic-label">// 知识管理 · 05 · 第二层</div>
+    <div class="slide-counter">5 / 9</div>
+    <div class="nav-hint">click to continue →</div>
+    <div class="center-content" style="gap:40px;">
+      <div class="slide-title" id="s5-title" style="opacity:0;visibility:hidden;">
+        文本，是 AI 和知识的<em>原生接口</em>
+      </div>
+      <div class="flow-layout" id="s5-flow">
+        <div class="flow-row" id="s5-r1">
+          <div class="row-label">// 视频路径</div>
+          <div class="flow-node bad">视频 1h</div>
+          <div class="flow-arrow">
+            <svg><line x1="0" y1="12" x2="100%" y2="12" stroke="var(--accent-4)" stroke-width="1" stroke-dasharray="4 4"/></svg>
+            <div class="flow-label" style="color:var(--accent-4)">先转文本·信息损耗</div>
+          </div>
+          <div class="flow-node bad">转译文本</div>
+          <div class="flow-arrow">
+            <svg><line x1="0" y1="12" x2="100%" y2="12" stroke="var(--accent-4)" stroke-width="1" stroke-dasharray="4 4"/></svg>
+            <div class="flow-label" style="color:var(--accent-4)">成本×50</div>
+          </div>
+          <div class="flow-node bad">AI 处理</div>
+        </div>
+        <div class="flow-row" id="s5-r2">
+          <div class="row-label">// 文本路径</div>
+          <div class="flow-node accent-node">干净文本</div>
+          <div class="flow-arrow">
+            <svg>
+              <line x1="0" y1="12" x2="100%" y2="12" stroke="var(--accent)" stroke-width="1.5"/>
+            </svg>
+            <div class="flow-label" style="color:var(--accent)">直接对接原生能力</div>
+          </div>
+          <div class="flow-node accent-node">AI 全精度理解</div>
+        </div>
+      </div>
+      <div class="verdict" id="s5-verdict">
+        不是 AI 不强。<br>
+        是<span class="acc">文本</span>，才是它真正的<span class="dim">语言</span>。
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ SLIDE 6: 第三层——现在与未来 ══════════ -->
+  <div class="slide" id="s6" data-slide="6">
+    <div class="topic-label">// 知识管理 · 06 · 第三层</div>
+    <div class="slide-counter">6 / 9</div>
+    <div class="nav-hint">click to continue →</div>
+    <div class="center-content" style="gap:40px;">
+      <div class="slide-title" id="s6-title" style="opacity:0;visibility:hidden;">
+        文本，是现在与未来的<em>迭代接口</em>
+      </div>
+      <div class="timeline-layout">
+        <div class="tl-col" id="s6-col1">
+          <div class="tl-header">收藏的视频</div>
+          <div class="tl-item">
+            <div class="tl-dot"></div>
+            <div class="tl-text"><strong>一次性内容</strong><br>一年后想找某个观点？大海捞针。</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot"></div>
+            <div class="tl-text">视频下架了，全没了</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot"></div>
+            <div class="tl-text">无法修改、无法对比</div>
+          </div>
+        </div>
+        <div class="tl-col divider" id="s6-div"></div>
+        <div class="tl-col" id="s6-col2">
+          <div class="tl-header">整理的文本</div>
+          <div class="tl-item">
+            <div class="tl-dot"></div>
+            <div class="tl-text"><strong>活的知识</strong><br>关键词搜索，一秒定位</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot"></div>
+            <div class="tl-text">可补充、可修正</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot"></div>
+            <div class="tl-text">跨内容对比，认知迭代升级</div>
+          </div>
+        </div>
+      </div>
+      <div class="conclusion" id="s6-conc">
+        它打通了现在的你和未来的你——<br>让每一次学习都能成为<span class="acc">认知升级的台阶</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ SLIDE 7: 哲学延伸 ══════════ -->
+  <div class="slide" id="s7" data-slide="7">
+    <div class="topic-label">// 知识管理 · 07 · 延伸</div>
+    <div class="slide-counter">7 / 9</div>
+    <div class="nav-hint">click to continue →</div>
+    <div class="center-content">
+      <div class="phil-layout">
+        <div class="myth" id="s7-myth">
+          视频里的微表情、语气才最值钱
+          <div class="myth-cross" id="s7-cross"></div>
+        </div>
+        <div class="truth" id="s7-truth">
+          没有文本搭好的<em>框架</em>，<br>隐性知识对你来说就是玄学
+        </div>
+        <div class="truth-note" id="s7-note">
+          先用文本建好导航图，再带着地图去看视频——<br>
+          你才能真正捕捉到那些文字里没有的东西。<br>
+          <strong style="color:var(--ink)">框架先行。感知才能跟上。</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ SLIDE 8: 4 步方法 ══════════ -->
+  <div class="slide" id="s8" data-slide="8">
+    <div class="topic-label">// 知识管理 · 08 · 落地</div>
+    <div class="slide-counter">8 / 9</div>
+    <div class="nav-hint">click to continue →</div>
+    <div class="center-content" style="align-items:flex-start; max-width:1060px; margin:auto; padding-top:100px; padding-bottom:80px;">
+      <div class="slide-title" id="s8-title" style="opacity:0;visibility:hidden;margin-bottom:48px;align-self:center;">
+        零成本落地 · <em>4 步</em>
+      </div>
+      <div class="steps-layout">
+        <div class="step" id="step1">
+          <div class="step-num">01</div>
+          <div class="step-body">
+            <h4>拿到文本</h4>
+            <p>YouTube 显示字幕 → 关闭时间戳 → 复制<br>国内平台用剪映智能字幕</p>
+          </div>
+        </div>
+        <div class="step" id="step2">
+          <div class="step-num">02</div>
+          <div class="step-body">
+            <h4>喂给 AI 提纯</h4>
+            <p>一句提示词就够：</p>
+            <code>帮我提炼核心观点，梳理逻辑框架，去掉冗余内容</code>
+          </div>
+        </div>
+        <div class="step" id="step3">
+          <div class="step-num">03</div>
+          <div class="step-body">
+            <h4>归档沉淀</h4>
+            <p>存进 Obsidian / 飞书 / 本地文档<br>保证可搜索、可修改</p>
+          </div>
+        </div>
+        <div class="step" id="step4">
+          <div class="step-num">04</div>
+          <div class="step-body">
+            <h4>跨文本整合</h4>
+            <p>攒够同主题内容，丢给 AI 做对比升级<br>输出属于你自己的方法论</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ SLIDE 9: 收尾行动 ══════════ -->
+  <div class="slide" id="s9" data-slide="9">
+    <div class="topic-label">// 知识管理 · 09 · 结尾</div>
+    <div class="slide-counter">9 / 9</div>
+    <div class="center-content">
+      <div class="cta-layout">
+        <div class="cta-strike" id="s9-strike">文本是落后的内容形式</div>
+        <div class="cta-truth" id="s9-truth">
+          文本是 LLM 给普通人<br>最好的<em>普惠礼物</em>
+        </div>
+        <div class="cta-gift" id="s9-gift">
+          不用花一分钱，不用懂技术<br>
+          它打通了你和知识、你和 AI、现在的你和未来的你
+        </div>
+        <div class="cta-action" id="s9-action">
+          <span class="pulse-dot"></span>
+          你现在有没有在用文本做知识管理？<br>
+          <strong>评论区聊聊</strong>——你的收藏夹里，有多少再也没打开过的视频
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /scale-root -->
+
+<script>
+  gsap.defaults({ ease: "power2.out", duration: 0.6 });
+
+  /* ── Responsive scale ── */
+  function scaleSlides() {
+    const root = document.getElementById('scale-root');
+    const scaleX = window.innerWidth / 1920;
+    const scaleY = window.innerHeight / 1080;
+    const scale = Math.min(scaleX, scaleY);
+    const offsetX = (window.innerWidth  - 1920 * scale) / 2;
+    const offsetY = (window.innerHeight - 1080 * scale) / 2;
+    root.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
+    document.body.style.background = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#faf8f3';
+  }
+  scaleSlides();
+  window.addEventListener('resize', scaleSlides);
+
+  /* ── State ── */
+  const TOTAL = 9;
+  let cur = 1;
+  let stepIdx = {};   // per-slide click step counters
+  let ready = false;  // gate: first click fires, not page load
+
+  /* ── Per-slide step sequences ── */
+  const slideSteps = {
+    1: [animS1_1, animS1_2, animS1_3, animS1_4, animS1_5],
+    2: [animS2_1, animS2_2, animS2_3, animS2_4],
+    3: [animS3_1, animS3_2, animS3_3],
+    4: [animS4_1, animS4_2, animS4_3, animS4_4],
+    5: [animS5_1, animS5_2, animS5_3, animS5_4],
+    6: [animS6_1, animS6_2, animS6_3, animS6_4],
+    7: [animS7_1, animS7_2, animS7_3],
+    8: [animS8_1, animS8_2, animS8_3, animS8_4, animS8_5],
+    9: [animS9_1, animS9_2, animS9_3, animS9_4],
+  };
+
+  function initStep(n) { stepIdx[n] = 0; }
+  for (let i = 1; i <= TOTAL; i++) initStep(i);
+
+  /* ── Reset helpers: restore all elements to hidden before showing a slide ── */
+  function resetSlide(n) {
+    if (n === 1) gsap.set(['#l1a','#l1b','#l1c','#l1d','#l1e'], { autoAlpha: 0, y: 30 });
+    if (n === 2) gsap.set(['#q-label','#q-main','#q-answer','#q-note'], { autoAlpha: 0, y: 20 });
+    if (n === 3) { gsap.set(['#s3-quote','#c-left','#c-right','#c-arrow'], { autoAlpha: 0, y: 24 }); gsap.set('#arrow-line', { strokeDashoffset: 200 }); }
+    if (n === 4) { gsap.set(['#s4-title','#s4-conc'], { autoAlpha: 0, y: 24 }); gsap.set('#s4-flip', { autoAlpha: 0 }); gsap.set('#s4-tip', { autoAlpha: 0.6 }); document.getElementById('s4-inner').classList.remove('flipped'); }
+    if (n === 5) gsap.set(['#s5-title','#s5-r1','#s5-r2','#s5-verdict'], { autoAlpha: 0, y: 24 });
+    if (n === 6) { gsap.set(['#s6-title','#s6-conc'], { autoAlpha: 0, y: 24 }); gsap.set('#s6-col1', { autoAlpha: 0, x: -32 }); gsap.set('#s6-col2', { autoAlpha: 0, x: 32 }); gsap.set('#s6-div', { autoAlpha: 0 }); }
+    if (n === 7) { gsap.set(['#s7-myth','#s7-truth','#s7-note'], { autoAlpha: 0, y: 24 }); gsap.set('#s7-cross', { scaleX: 0 }); }
+    if (n === 8) { gsap.set('#s8-title', { autoAlpha: 0, y: 24 }); gsap.set(['#step1','#step2','#step3','#step4'], { autoAlpha: 0, x: -32 }); }
+    if (n === 9) gsap.set(['#s9-strike','#s9-truth','#s9-gift','#s9-action'], { autoAlpha: 0, y: 24 });
+  }
+
+  /* ── Navigation ── */
+  function showSlide(n) {
+    document.querySelectorAll('.slide').forEach(s => s.classList.remove('current'));
+    const el = document.getElementById('s' + n);
+    el.classList.add('current');
+    cur = n;
+    resetSlide(n);
+    initStep(n);
+    // 自动播放该 slide 的第一步入场动画
+    setTimeout(() => handleAdvance(), 80);
+  }
+
+  function nextSlide() { if (cur < TOTAL) showSlide(cur + 1); }
+  function prevSlide() { if (cur > 1)  showSlide(cur - 1); }
+
+  /* ── Master click / key handler ── */
+  function handleAdvance() {
+    const steps = slideSteps[cur];
+    const idx = stepIdx[cur];
+    if (idx < steps.length) {
+      steps[idx]();
+      stepIdx[cur]++;
+    } else {
+      nextSlide();
+    }
+  }
+
+  document.addEventListener('click', handleAdvance);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === ' ' || e.key === 'ArrowRight') { e.preventDefault(); handleAdvance(); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+  });
+
+  /* ══════════════════════════════════
+     SLIDE 1: 开场锚点
+  ══════════════════════════════════ */
+  function animS1_1() {
+    gsap.fromTo('#l1a', { autoAlpha:0, y:40 }, { autoAlpha:1, y:0, duration:0.6, ease:'power3.out' });
+  }
+  function animS1_2() {
+    gsap.fromTo('#l1b', { autoAlpha:0, y:40 }, { autoAlpha:1, y:0, duration:0.6, ease:'power3.out' });
+  }
+  function animS1_3() {
+    gsap.fromTo('#l1c', { autoAlpha:0, y:40 }, { autoAlpha:1, y:0, duration:0.6, ease:'power3.out' });
+  }
+  function animS1_4() {
+    gsap.fromTo('#l1d', { autoAlpha:0, y:40 }, { autoAlpha:1, y:0, duration:0.6, ease:'power3.out' });
+  }
+  function animS1_5() {
+    gsap.fromTo('#l1e', { autoAlpha:0, y:50, scale:0.95 }, { autoAlpha:1, y:0, scale:1, duration:0.7, ease:'back.out(1.3)' });
+  }
+
+  /* ══════════════════════════════════
+     SLIDE 2: 问题前置
+  ══════════════════════════════════ */
+  function animS2_1() {
+    gsap.fromTo('#q-label', { autoAlpha:0, y:24 }, { autoAlpha:1, y:0, duration:0.5 });
+  }
+  function animS2_2() {
+    gsap.fromTo('#q-main', { autoAlpha:0, y:30 }, { autoAlpha:1, y:0, duration:0.6, ease:'power3.out' });
+  }
+  function animS2_3() {
+    gsap.fromTo('#q-answer',
+      { autoAlpha:0, scale:0.7, y:20 },
+      { autoAlpha:1, scale:1, y:0, duration:0.6, ease:'back.out(1.6)' }
+    );
+  }
+  function animS2_4() {
+    gsap.fromTo('#q-note', { autoAlpha:0, y:20 }, { autoAlpha:1, y:0, duration:0.5 });
+  }
+
+  /* ══════════════════════════════════
+     SLIDE 3: 接口类比
+  ══════════════════════════════════ */
+  function animS3_1() {
+    gsap.fromTo('#s3-quote', { autoAlpha:0, x:-32 }, { autoAlpha:1, x:0, duration:0.6, ease:'power3.out' });
+  }
+  function animS3_2() {
+    gsap.fromTo('#c-left',  { autoAlpha:0, x:-48 }, { autoAlpha:1, x:0, duration:0.55, ease:'power3.out' });
+    gsap.fromTo('#c-right', { autoAlpha:0, x:48  }, { autoAlpha:1, x:0, duration:0.55, ease:'power3.out', delay:0.15 });
+  }
+  function animS3_3() {
+    gsap.to('#c-arrow', { autoAlpha:1, duration:0.2 });
+    gsap.to('#arrow-line', { strokeDashoffset:0, duration:0.65, ease:'power2.inOut' });
+  }
+
+  /* ══════════════════════════════════
+     SLIDE 4: 你与知识
+  ══════════════════════════════════ */
+  function animS4_1() {
+    gsap.fromTo('#s4-title', { autoAlpha:0, y:36 }, { autoAlpha:1, y:0, duration:0.65, ease:'power3.out' });
+  }
+  function animS4_2() {
+    gsap.fromTo('#s4-flip', { autoAlpha:0, scale:0.88 }, { autoAlpha:1, scale:1, duration:0.55, ease:'back.out(1.3)' });
+    gsap.fromTo('#s4-tip',  { autoAlpha:0 }, { autoAlpha:0.6, duration:0.4, delay:0.4 });
+  }
+  function animS4_3() {
+    document.getElementById('s4-inner').classList.add('flipped');
+    gsap.to('#s4-tip', { autoAlpha:0, duration:0.2 });
+  }
+  function animS4_4() {
+    gsap.fromTo('#s4-conc', { autoAlpha:0, y:28 }, { autoAlpha:1, y:0, duration:0.6, ease:'power3.out' });
+  }
+
+  /* ══════════════════════════════════
+     SLIDE 5: AI 与知识
+  ══════════════════════════════════ */
+  function animS5_1() {
+    gsap.fromTo('#s5-title', { autoAlpha:0, y:36 }, { autoAlpha:1, y:0, duration:0.65, ease:'power3.out' });
+  }
+  function animS5_2() {
+    gsap.fromTo('#s5-r1', { autoAlpha:0, x:-40 }, { autoAlpha:1, x:0, duration:0.55, ease:'power3.out' });
+  }
+  function animS5_3() {
+    gsap.fromTo('#s5-r2', { autoAlpha:0, x:40 }, { autoAlpha:1, x:0, duration:0.55, ease:'power3.out' });
+  }
+  function animS5_4() {
+    gsap.fromTo('#s5-verdict', { autoAlpha:0, scale:0.94, y:20 }, { autoAlpha:1, scale:1, y:0, duration:0.6, ease:'back.out(1.2)' });
+  }
+
+  /* ══════════════════════════════════
+     SLIDE 6: 现在与未来
+  ══════════════════════════════════ */
+  function animS6_1() {
+    gsap.fromTo('#s6-title', { autoAlpha:0, y:36 }, { autoAlpha:1, y:0, duration:0.65, ease:'power3.out' });
+  }
+  function animS6_2() {
+    gsap.fromTo('#s6-col1', { autoAlpha:0, x:-48 }, { autoAlpha:1, x:0, duration:0.55, ease:'power3.out' });
+  }
+  function animS6_3() {
+    gsap.fromTo('#s6-div',  { autoAlpha:0, scaleY:0 }, { autoAlpha:1, scaleY:1, duration:0.4, ease:'power2.out', transformOrigin:'top center' });
+    gsap.fromTo('#s6-col2', { autoAlpha:0, x:48 }, { autoAlpha:1, x:0, duration:0.55, ease:'power3.out', delay:0.15 });
+  }
+  function animS6_4() {
+    gsap.fromTo('#s6-conc', { autoAlpha:0, y:28 }, { autoAlpha:1, y:0, duration:0.6, ease:'power3.out' });
+  }
+
+  /* ══════════════════════════════════
+     SLIDE 7: 哲学延伸
+  ══════════════════════════════════ */
+  function animS7_1() {
+    gsap.fromTo('#s7-myth', { autoAlpha:0, y:32 }, { autoAlpha:1, y:0, duration:0.6, ease:'power3.out' });
+  }
+  function animS7_2() {
+    const tl = gsap.timeline();
+    tl.to('#s7-cross', { scaleX:1, duration:0.45, ease:'power2.inOut' })
+      .to('#s7-myth',  { opacity:0.25, duration:0.35 }, '<0.1')
+      .fromTo('#s7-truth', { autoAlpha:0, y:32, scale:0.95 }, { autoAlpha:1, y:0, scale:1, duration:0.6, ease:'back.out(1.2)' }, '-=0.1');
+  }
+  function animS7_3() {
+    gsap.fromTo('#s7-note', { autoAlpha:0, y:24 }, { autoAlpha:1, y:0, duration:0.55, ease:'power3.out' });
+  }
+
+  /* ══════════════════════════════════
+     SLIDE 8: 4 步落地
+  ══════════════════════════════════ */
+  function animS8_1() {
+    gsap.fromTo('#s8-title', { autoAlpha:0, y:32 }, { autoAlpha:1, y:0, duration:0.6, ease:'power3.out' });
+  }
+  function animS8_2() {
+    gsap.fromTo('#step1', { autoAlpha:0, x:-48 }, { autoAlpha:1, x:0, duration:0.5, ease:'power3.out' });
+  }
+  function animS8_3() {
+    gsap.fromTo('#step2', { autoAlpha:0, x:-48 }, { autoAlpha:1, x:0, duration:0.5, ease:'power3.out' });
+  }
+  function animS8_4() {
+    gsap.fromTo('#step3', { autoAlpha:0, x:-48 }, { autoAlpha:1, x:0, duration:0.5, ease:'power3.out' });
+  }
+  function animS8_5() {
+    gsap.fromTo('#step4', { autoAlpha:0, x:-48 }, { autoAlpha:1, x:0, duration:0.5, ease:'power3.out' });
+  }
+
+  /* ══════════════════════════════════
+     SLIDE 9: 收尾行动
+  ══════════════════════════════════ */
+  function animS9_1() {
+    gsap.fromTo('#s9-strike', { autoAlpha:0, y:32 }, { autoAlpha:1, y:0, duration:0.55, ease:'power3.out' });
+  }
+  function animS9_2() {
+    const tl = gsap.timeline();
+    tl.to('#s9-strike', { opacity:0.2, duration:0.3 })
+      .fromTo('#s9-truth', { autoAlpha:0, y:40, scale:0.93 }, { autoAlpha:1, y:0, scale:1, duration:0.7, ease:'back.out(1.3)' }, '-=0.1');
+  }
+  function animS9_3() {
+    gsap.fromTo('#s9-gift', { autoAlpha:0, y:24 }, { autoAlpha:1, y:0, duration:0.55 });
+  }
+  function animS9_4() {
+    gsap.fromTo('#s9-action',
+      { autoAlpha:0, scale:0.93, y:20 },
+      { autoAlpha:1, scale:1, y:0, duration:0.55, ease:'back.out(1.4)' }
+    );
+    gsap.to('.pulse-dot', { scale:1.5, repeat:-1, yoyo:true, duration:0.75, ease:'power1.inOut' });
+  }
+
+  /* ── 初始化：第一张 slide 自动入场 ── */
+  resetSlide(1);
+  setTimeout(() => handleAdvance(), 300);
+
+</script>
+</body>
+</html>
