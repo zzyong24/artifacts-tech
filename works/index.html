@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>教学作品库</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Space+Mono:wght@400;700&family=Noto+Sans+SC:wght@300;400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:    #f5f0e8;
+  --ink:   #1a1410;
+  --red:   #c8432a;
+  --blue:  #2a5fc8;
+  --gold:  #e8a020;
+  --green: #2a8c4a;
+  --cream: #fffdf7;
+  --dim:   rgba(26,20,16,.45);
+
+  --font-display: 'Caveat', cursive;
+  --font-label:   'Space Mono', monospace;
+  --font-body:    'Noto Sans SC', sans-serif;
+  --shadow:    6px 6px 0 var(--ink);
+  --shadow-sm: 3px 3px 0 var(--ink);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  background-image: radial-gradient(circle, rgba(26,20,16,.10) 1.5px, transparent 1.5px);
+  background-size: 40px 40px;
+  font-family: var(--font-body);
+  min-height: 100vh;
+  padding: 0 0 80px;
+}
+
+/* ── header ── */
+.site-header {
+  padding: 64px 80px 48px;
+  border-bottom: 2px solid var(--ink);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+}
+.header-left { display: flex; flex-direction: column; gap: 12px; }
+.site-label {
+  font-family: var(--font-label);
+  font-size: 13px;
+  color: var(--dim);
+  letter-spacing: .12em;
+}
+.site-title {
+  font-family: var(--font-display);
+  font-size: clamp(48px, 6vw, 88px);
+  color: var(--ink);
+  line-height: 1;
+}
+.site-title span { color: var(--red); }
+.site-desc {
+  font-size: clamp(14px, 1.3vw, 18px);
+  color: var(--dim);
+  font-weight: 300;
+  max-width: 520px;
+  line-height: 1.7;
+}
+.header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+.stat-pill {
+  font-family: var(--font-label);
+  font-size: 13px;
+  color: var(--dim);
+  padding: 8px 20px;
+  border: 1.5px solid rgba(26,20,16,.2);
+  border-radius: 999px;
+}
+.stat-pill strong { color: var(--ink); }
+
+/* ── grid ── */
+.works-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 40px;
+  padding: 56px 80px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* ── work card ── */
+.work-card {
+  background: var(--cream);
+  border: 2px solid var(--ink);
+  box-shadow: var(--shadow);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  transition: transform .2s ease, box-shadow .2s ease;
+  position: relative;
+}
+.work-card:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: 9px 9px 0 var(--ink);
+}
+.work-card:active {
+  transform: translate(0,0);
+  box-shadow: var(--shadow);
+}
+
+/* accent top bar */
+.card-bar {
+  height: 6px;
+  background: var(--ink);
+}
+.work-card:nth-child(4n+1) .card-bar { background: var(--red); }
+.work-card:nth-child(4n+2) .card-bar { background: var(--blue); }
+.work-card:nth-child(4n+3) .card-bar { background: var(--gold); }
+.work-card:nth-child(4n+4) .card-bar { background: var(--green); }
+
+.card-body { padding: 32px 36px; flex: 1; display: flex; flex-direction: column; gap: 16px; }
+
+.card-num {
+  font-family: var(--font-label);
+  font-size: 12px;
+  color: var(--dim);
+  letter-spacing: .1em;
+}
+.card-title {
+  font-size: clamp(20px, 1.8vw, 28px);
+  font-weight: 900;
+  color: var(--ink);
+  line-height: 1.3;
+  flex: 1;
+}
+.card-meta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.meta-tag {
+  font-family: var(--font-label);
+  font-size: 11px;
+  padding: 5px 14px;
+  border: 1.5px solid rgba(26,20,16,.2);
+  border-radius: 999px;
+  color: var(--dim);
+  background: var(--bg);
+}
+
+/* card footer */
+.card-footer {
+  padding: 20px 36px;
+  border-top: 1.5px solid rgba(26,20,16,.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.open-label {
+  font-family: var(--font-label);
+  font-size: 12px;
+  color: var(--dim);
+  letter-spacing: .06em;
+}
+.open-arrow {
+  width: 32px; height: 32px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  background: var(--cream);
+  transition: background .2s, color .2s;
+}
+.work-card:hover .open-arrow {
+  background: var(--ink);
+  color: var(--cream);
+}
+
+/* ── empty state (为将来新建作品的占位) ── */
+.card-empty {
+  border: 2px dashed rgba(26,20,16,.25);
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  padding: 48px 36px;
+  text-align: center;
+  min-height: 220px;
+  color: var(--dim);
+  cursor: default;
+  pointer-events: none;
+}
+.card-empty:hover { transform: none; box-shadow: none; }
+.card-empty .empty-icon {
+  font-size: 36px;
+  opacity: .3;
+}
+.card-empty .empty-label {
+  font-family: var(--font-label);
+  font-size: 12px;
+  letter-spacing: .08em;
+  opacity: .4;
+}
+
+/* ── footer ── */
+.site-footer {
+  margin: 0 80px;
+  padding: 32px 0;
+  border-top: 2px solid var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.footer-brand {
+  font-family: var(--font-display);
+  font-size: 24px;
+  color: var(--ink);
+}
+.footer-note {
+  font-family: var(--font-label);
+  font-size: 12px;
+  color: var(--dim);
+}
+.kbd {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 1.5px solid rgba(26,20,16,.3);
+  border-radius: 4px;
+  font-family: var(--font-label);
+  font-size: 11px;
+  background: var(--cream);
+  color: var(--ink);
+  margin: 0 2px;
+}
+
+/* ── search bar ── */
+.search-wrap {
+  padding: 32px 80px 0;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+.search-input {
+  width: 360px;
+  padding: 12px 20px;
+  border: 2px solid var(--ink);
+  box-shadow: var(--shadow-sm);
+  border-radius: 4px;
+  background: var(--cream);
+  font-family: var(--font-label);
+  font-size: 13px;
+  color: var(--ink);
+  outline: none;
+}
+.search-input::placeholder { color: var(--dim); }
+.search-input:focus { box-shadow: 5px 5px 0 var(--ink); }
+</style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header class="site-header">
+  <div class="header-left">
+    <div class="site-label">// AI 教学作品库 · my-artifacts</div>
+    <div class="site-title">教学<span>作品</span></div>
+    <p class="site-desc">
+      每一篇口播稿，每一套动画，都是一个概念的可视化表达。<br>
+      点击卡片打开教学动画，点击右上角「→」进入。
+    </p>
+  </div>
+  <div class="header-right">
+    <div class="stat-pill">共 <strong id="total-count">2</strong> 个作品</div>
+    <div class="stat-pill">键盘 <span class="kbd">←</span><span class="kbd">→</span> 控制动画</div>
+    <div class="stat-pill">按 <span class="kbd">F</span> 全屏</div>
+  </div>
+</header>
+
+<!-- ── Search ── -->
+<div class="search-wrap">
+  <input class="search-input" id="search" type="text" placeholder="搜索作品标题..." oninput="filterCards()">
+</div>
+
+<!-- ── Works Grid ── -->
+<main class="works-grid" id="grid">
+
+  <!-- 01 · 文本是知识的接口 -->
+  <a class="work-card" href="01-text-is-interface/index.html">
+    <div class="card-bar"></div>
+    <div class="card-body">
+      <div class="card-num">// 01</div>
+      <div class="card-title">文本是知识的接口</div>
+      <div class="card-meta">
+        <span class="meta-tag">知识管理</span>
+        <span class="meta-tag">AI 工具</span>
+        <span class="meta-tag">Obsidian</span>
+      </div>
+    </div>
+    <div class="card-footer">
+      <span class="open-label">打开动画 →</span>
+      <div class="open-arrow">→</div>
+    </div>
+  </a>
+
+  <!-- 02 · SOP → Skills -->
+  <a class="work-card" href="02-sop-to-skills/index.html">
+    <div class="card-bar"></div>
+    <div class="card-body">
+      <div class="card-num">// 02</div>
+      <div class="card-title">SOP 不只是流程文档，是你进入 AI 时代的入场券</div>
+      <div class="card-meta">
+        <span class="meta-tag">SOP</span>
+        <span class="meta-tag">AI Skills</span>
+        <span class="meta-tag">职场进阶</span>
+      </div>
+    </div>
+    <div class="card-footer">
+      <span class="open-label">打开动画 →</span>
+      <div class="open-arrow">→</div>
+    </div>
+  </a>
+
+  <!-- 占位：下一个作品 -->
+  <div class="work-card card-empty">
+    <div class="empty-icon">＋</div>
+    <div class="empty-label">// NEXT WORK<br>运行 /gen-script 创建下一个作品</div>
+  </div>
+
+</main>
+
+<!-- ── Footer ── -->
+<footer class="site-footer">
+  <div class="footer-brand">my-artifacts</div>
+  <div class="footer-note">
+    新增作品后运行 <span class="kbd">/gen-slides</span> 并更新此页面
+  </div>
+</footer>
+
+<script>
+function filterCards() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const cards = document.querySelectorAll('.work-card:not(.card-empty)');
+  let visible = 0;
+  cards.forEach(card => {
+    const text = card.textContent.toLowerCase();
+    const show = !q || text.includes(q);
+    card.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+  document.getElementById('total-count').textContent = visible;
+}
+</script>
+</body>
+</html>
