@@ -939,6 +939,66 @@ ctrl.advance = function() {
   }
   origAdvance();
 };
+
+/* ── 提词器联动（BroadcastChannel slide-sync）── */
+(function() {
+  let _bc = null;
+  let _scriptText = null;
+  let _presentationStarted = false;
+
+  const SCRIPT_URL = window.location.origin + '/works/02-sop-to-skills/script.md';
+
+  const fetchScript = async () => {
+    if (_scriptText) return _scriptText;
+    try {
+      console.log('[slide-sync] fetching script from:', SCRIPT_URL);
+      const res = await fetch(SCRIPT_URL);
+      if (res.ok) _scriptText = await res.text();
+      else console.warn('[slide-sync] fetch failed, status:', res.status, SCRIPT_URL);
+    } catch(e) { console.warn('[slide-sync] fetch error:', e); }
+    return _scriptText;
+  };
+
+  fetchScript();
+
+  try {
+    _bc = new BroadcastChannel('slide-sync');
+
+    // 页面加载完 → 通知提词器重置（停止滚动、回顶部、等待演讲开始）
+    _bc.postMessage({ type: 'reset' });
+
+    setInterval(() => _bc && _bc.postMessage({ type: 'heartbeat' }), 2000);
+
+    _bc.onmessage = async (e) => {
+      const msg = e.data || {};
+      if (msg.type === 'request-script') {
+        const text = await fetchScript();
+        if (text) _bc.postMessage({ type: 'load-script', text, name: 'script.md', slide: ctrl.cur, scriptUrl: SCRIPT_URL });
+      }
+    };
+  } catch(e) {}
+
+  function broadcastSlide(n) {
+    try { _bc && _bc.postMessage({ type: 'slide-change', slide: n }); } catch(e) {}
+  }
+
+  // 拦截 goto：每次切换 slide 广播
+  const _origGoto = ctrl.goto.bind(ctrl);
+  ctrl.goto = function(n) {
+    _origGoto(n);
+    broadcastSlide(this.cur);
+  };
+
+  // 拦截 advance：第一次点击触发演讲开始信号
+  const _origAdvanceFinal = ctrl.advance.bind(ctrl);
+  ctrl.advance = function() {
+    if (!_presentationStarted) {
+      _presentationStarted = true;
+      broadcastSlide(this.cur);
+    }
+    _origAdvanceFinal();
+  };
+})();
 </script>
 </body>
 </html>

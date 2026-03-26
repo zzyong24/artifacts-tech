@@ -2,6 +2,8 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8" />
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
   <title>文本是知识的接口</title>
   <script src="../vendor/gsap.min.js"></script>
   <style>
@@ -1054,7 +1056,7 @@
           <div class="step-body">
             <svg class="step-icon" style="color:var(--accent-4)"><use href="#icon-video"/></svg>
             <h4>拿到文本</h4>
-            <p>YouTube 显示字幕 → 关闭时间戳 → 复制<br>国内平台用剪映智能字幕</p>
+            <p>显示字幕 → 关闭时间戳 → 复制<br>(后面会介绍我自己的提取工具：网页/视频)</p>
           </div>
         </div>
         <div class="step" id="step2">
@@ -1063,7 +1065,7 @@
             <svg class="step-icon" style="color:var(--accent-2)"><use href="#icon-ai-brain"/></svg>
             <h4>喂给 AI 提纯</h4>
             <p>一句提示词就够：</p>
-            <code>帮我提炼核心观点，梳理逻辑框架，去掉冗余内容</code>
+            <code>帮我提炼核心观点，梳理逻辑框架，去掉冗余内容<br>（还有更高端的玩法）</code>
           </div>
         </div>
         <div class="step" id="step3">
@@ -1166,6 +1168,50 @@
     if (n === 9) gsap.set(['#s9-strike','#s9-truth','#s9-gift','#s9-action'], { autoAlpha: 0, y: 24 });
   }
 
+  /* ── Slide Sync: BroadcastChannel ── */
+  let _bc = null;
+  let _scriptText = null; // 缓存 script.md 内容
+
+  // 异步加载 script.md（只加载一次，后续用缓存）
+  const fetchScript = async () => {
+    if (_scriptText) return _scriptText;
+    try {
+      const url = window.location.origin + '/works/01-text-is-interface/script.md';
+      console.log('[slide-sync] fetching script from:', url);
+      const res = await fetch(url);
+      if (res.ok) _scriptText = await res.text();
+      else console.warn('[slide-sync] fetch failed, status:', res.status, url);
+    } catch(e) { console.warn('[slide-sync] fetch error:', e); }
+    return _scriptText;
+  };
+
+  // 预先加载，缓存起来
+  fetchScript();
+
+  try {
+    _bc = new BroadcastChannel('slide-sync');
+
+    // 页面加载完 → 通知提词器重置（停止滚动、回顶部、等待演讲开始）
+    _bc.postMessage({ type: 'reset' });
+
+    // 心跳：每 2 秒发一次；如果提词器回复 need-script，就推内容
+    setInterval(() => _bc && _bc.postMessage({ type: 'heartbeat' }), 2000);
+
+    _bc.onmessage = async (e) => {
+      const msg = e.data || {};
+      // 提词器发来 request-script（刚打开 / 刷新时）
+      if (msg.type === 'request-script') {
+        const text = await fetchScript();
+        // 同时把当前 slide 编号带上，让提词器加载完直接跳到正确位置
+        if (text) _bc.postMessage({ type: 'load-script', text, name: 'script.md', slide: cur, scriptUrl: window.location.origin + '/works/01-text-is-interface/script.md' });
+      }
+    };
+  } catch(e) {}
+
+  function broadcastSlide(n) {
+    try { _bc && _bc.postMessage({ type: 'slide-change', slide: n }); } catch(e) {}
+  }
+
   /* ── Navigation ── */
   function showSlide(n) {
     document.querySelectorAll('.slide').forEach(s => s.classList.remove('current'));
@@ -1174,6 +1220,7 @@
     cur = n;
     resetSlide(n);
     initStep(n);
+    broadcastSlide(n);
     // 自动播放该 slide 的第一步入场动画
     setTimeout(() => handleAdvance(), 80);
   }
@@ -1182,7 +1229,13 @@
   function prevSlide() { if (cur > 1)  showSlide(cur - 1); }
 
   /* ── Master click / key handler ── */
+  let _presentationStarted = false;
   function handleAdvance() {
+    // 第一次点击 = 演讲开始，广播 slide-change 触发提词器自动播放
+    if (!_presentationStarted) {
+      _presentationStarted = true;
+      broadcastSlide(cur);
+    }
     const steps = slideSteps[cur];
     const idx = stepIdx[cur];
     if (idx < steps.length) {

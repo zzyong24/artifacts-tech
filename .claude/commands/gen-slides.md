@@ -33,6 +33,9 @@
 如果文件不存在，提示：
 > 未找到口播稿，请先执行 `/gen-script <作品目录名>` 生成口播稿。
 
+**⚠️ 检查 script.md 格式**：提词器同步要求口播稿必须用 `### Slide N` 三级标题分段。
+如果发现 script.md 用的是 `## Slide N`（二级标题）或没有 Slide 分段，**直接修正为 `### Slide N` 格式后再继续**，不用询问用户。
+
 ### Step 3：加载动画规范
 
 按需读取 `prompts.slides` 目录下的规范文件：
@@ -96,9 +99,24 @@
 - 使用 `FORMATS.md` 中的 `SlideController` 导航控制器
 - 字号使用 `clamp()` 系统，不用固定 px
 - 动画全部用户点击触发，不自动播放
-- GSAP 使用本地 `./gsap.min.js`（不用 CDN）
 - 所有图标内联为 SVG（不用外部路径）
 - 每张 Slide 只承载一个认知单元
+
+**动画技术选择原则：**
+
+优先用 **CSS transition / CSS animation** 的场景（轻量、无需 GSAP）：
+- 单个元素简单淡入淡出（`opacity`、`transform` 的单步过渡）
+- hover 交互效果
+- 无限循环的装饰动画（脉冲、轨道、粒子等 `animation: infinite`）
+- 单方向生长的线条或进度条（`transition: width/height`）
+
+**必须用 GSAP**（`./gsap.min.js` 已引入，直接调用）的场景：
+- 同一 Slide 内有 **3 步以上**的动画序列，需要精确时序编排 → 用 `gsap.timeline()`
+- 多个同类元素需要**依次入场**（stagger 效果）→ 用 `gsap.fromTo()` + `stagger`
+- 元素入场需要**弹性/回弹缓动**（back.out、elastic）→ CSS cubic-bezier 无法实现
+- **SVG 路径描边动画**（连线生长等）需要精确控制 → 用 `gsap.to()` 控制 `strokeDashoffset`
+- 动画需要根据**点击步骤动态重置或跳转**状态 → 用 `gsap.set()` 精确还原初始值
+- 多个属性需要**同步或交错**执行（如"A 淡出的同时 B 弹入"）→ 用 `gsap.timeline()` 的 `<` 偏移语法
 
 **自我检查清单（生成后逐条验证）：**
 - [ ] 无 bullet point 列表（改为 layout 或动画）
@@ -108,20 +126,165 @@
 - [ ] 口播文字未直接搬到 Slide（提炼核心词）
 - [ ] 无 `setInterval` 无限循环
 - [ ] 字号使用 clamp() 或 CSS 变量，不硬编码 px
-- [ ] GSAP 使用本地 `./gsap.min.js`
+- [ ] 凡符合"必须用 GSAP"场景的动画，均已使用 `gsap.to / gsap.from / gsap.fromTo / gsap.timeline` 实现，而非退回到 CSS transition
 - [ ] 所有 SVG 已内联，无外部路径引用
 - [ ] 动画选择有认知目标依据（不是随意选的）
 
-### Step 7：复制 GSAP 依赖
+### Step 7：提词器联动代码
+
+每个教学网页必须内嵌以下提词器同步代码（固定模板，不可省略）。
+将下方代码块插入 `</body>` 前的 `<script>` 区域末尾：
+
+```javascript
+/* ── 提词器联动（BroadcastChannel slide-sync）── */
+(function() {
+  let _bc = null;
+  let _scriptText = null;
+  let _presentationStarted = false;
+
+  // 路径写死，避免浏览器 URL 解析歧义；将 <作品目录名> 替换为实际目录名
+  const SCRIPT_URL = window.location.origin + '/works/<作品目录名>/script.md';
+
+  const fetchScript = async () => {
+    if (_scriptText) return _scriptText;
+    try {
+      const res = await fetch(SCRIPT_URL);
+      if (res.ok) _scriptText = await res.text();
+    } catch(e) {}
+    return _scriptText;
+  };
+
+  fetchScript();
+
+  try {
+    _bc = new BroadcastChannel('slide-sync');
+
+    // 页面加载完立刻广播 reset：通知提词器停止滚动、回到顶部、等待新演讲开始
+    _bc.postMessage({ type: 'reset' });
+
+    // 心跳：每 2 秒发一次，让提词器知道幻灯片还在线
+    setInterval(() => _bc && _bc.postMessage({ type: 'heartbeat' }), 2000);
+
+    _bc.onmessage = async (e) => {
+      const msg = e.data || {};
+      if (msg.type === 'request-script') {
+        const text = await fetchScript();
+        // 注意：slide 值用 getCurrentSlide() 获取，兼容全局变量和 OOP 两种架构
+        if (text) _bc.postMessage({ type: 'load-script', text, name: 'script.md', slide: getCurrentSlide() });
+      }
+    };
+  } catch(e) {}
+
+  // getCurrentSlide：兼容全局 cur（函数式）和 ctrl.cur（OOP）两种架构
+  // 生成 HTML 时根据实际架构选其一，删除另一行
+  function getCurrentSlide() {
+    if (typeof cur !== 'undefined') return cur;            // 函数式架构（如 01）
+    if (typeof ctrl !== 'undefined') return ctrl.cur;     // OOP 架构（如 02）
+    return 0;
+  }
+
+  // broadcastSlide：切换 slide 时调用
+  function broadcastSlide(n) {
+    try { _bc && _bc.postMessage({ type: 'slide-change', slide: n }); } catch(e) {}
+  }
+
+  // 第一次点击（演讲开始）→ 广播当前 slide，触发提词器自动滚动
+  // 根据架构选择对应的拦截方式（二选一，删除不用的）：
+
+  // ── 方案 A：函数式架构（handleAdvance 是全局函数）──
+  const _origHandleAdvance = handleAdvance;
+  const _wrappedHandleAdvance = function() {
+    if (!_presentationStarted) { _presentationStarted = true; broadcastSlide(getCurrentSlide()); }
+    _origHandleAdvance();
+  };
+  document.removeEventListener('click', handleAdvance);
+  document.addEventListener('click', _wrappedHandleAdvance);
+  handleAdvance = _wrappedHandleAdvance;
+
+  // ── 方案 B：OOP 架构（ctrl 是 SlideController 实例）──
+  // const _origGoto = ctrl.goto.bind(ctrl);
+  // ctrl.goto = function(n) { _origGoto(n); broadcastSlide(this.cur); };
+  // const _origAdvance = ctrl.advance.bind(ctrl);
+  // ctrl.advance = function() {
+  //   if (!_presentationStarted) { _presentationStarted = true; broadcastSlide(this.cur); }
+  //   _origAdvance();
+  // };
+})();
+```
+
+**注意事项：**
+- 将 `<作品目录名>` 替换为实际目录名（如 `03-made-to-stick`）
+- 根据生成的架构选择方案 A 或方案 B，删除另一方案的注释代码
+- `load-script` 消息**必须携带 `scriptUrl` 字段**（提词器自动加载逐字稿依赖此字段）：
+  ```javascript
+  if (text) _bc.postMessage({ type: 'load-script', text, name: 'script.md', slide: getCurrentSlide(), scriptUrl: SCRIPT_URL });
+  ```
+
+**⚠️ 关键：`showSlide` 完整模板（防止反向回退时显示动画中间状态）**
+
+函数式架构必须按此模板实现 `showSlide`：
+
+```javascript
+function showSlide(n) {
+  document.querySelectorAll('.slide').forEach(s => s.classList.remove('current'));
+  document.getElementById('s' + n).classList.add('current');
+  cur = n;
+  resetSlide(n);              // ← 必须调用，重置该 slide 所有 GSAP 元素为初始状态
+  initStep(n);                // ← 重置步骤计数
+  broadcastSlide(n);          // ← 通知提词器
+  document.getElementById('slide-num').textContent = n + ' / ' + TOTAL;
+  document.getElementById('prog').style.width = (n / TOTAL * 100) + '%';
+  setTimeout(() => handleAdvance(), 80); // ← 自动触发第一步入场动画
+}
+```
+
+**`resetSlide(n)` 不能是空函数**，必须按 slide 编号逐一重置该页所有 GSAP 动画元素：
+
+```javascript
+function resetSlide(n) {
+  gsap.killTweensOf('*'); // 先停掉所有进行中的动画
+  switch(n) {
+    case 1:
+      gsap.set(['#s1-tag','#s1-t1','#s1-t2','#s1-sub','#s1-badge'], { autoAlpha:0, y:20 });
+      gsap.set('#s1-rule', { width:0 }); // 线条/进度条用 width:0 重置
+      break;
+    case 2:
+      gsap.set(['#s2-title', /* 该 slide 所有动画元素 */], { autoAlpha:0, y:20 });
+      break;
+    // ... 所有 Slide 都要有对应的 case
+  }
+}
+```
+
+**重置对照表（入场方式 → 重置方式）：**
+| 入场动画 | 重置值 |
+|----------|--------|
+| `autoAlpha:1, y:0`（从下方淡入） | `autoAlpha:0, y:20` |
+| `autoAlpha:1, x:0`（横向滑入） | `autoAlpha:0, x:0`（保持 x 不动，只重置透明度）|
+| `width:240`（线条生长） | `width:0` |
+| `autoAlpha:1, scale:1`（缩放入场） | `autoAlpha:0, scale:.9` |
+| `autoAlpha:1`（单纯淡入） | `autoAlpha:0` |
+
+### Step 8：复制 GSAP 依赖
 
 检查 `<works_dir>/<作品目录名>/gsap.min.js` 是否存在：
-- 不存在 → 从 `works/01-text-is-interface/gsap.min.js` 复制
+- 不存在 → 从 `vendor/gsap.min.js` 复制
 
-### Step 8：更新 works/index.html
+### Step 9：更新 works/index.html
 
 生成完成后，更新 `works/index.html` 的作品列表（若索引页存在），将新作品卡片加入。
 
-### Step 9：保存并确认
+**⚠️ 卡片链接必须使用绝对路径**，不能用相对路径，否则从非 `/works/` 路径访问时会 404：
+
+```html
+<!-- ✅ 正确 -->
+<a class="work-card" href="/works/03-made-to-stick/index.html">
+
+<!-- ❌ 错误 -->
+<a class="work-card" href="03-made-to-stick/index.html">
+```
+
+### Step 10：保存并确认
 
 保存 `<works_dir>/<作品目录名>/index.html`，告知用户：
 - 文件路径

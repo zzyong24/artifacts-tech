@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>提词器 · Teleprompter</title>
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --text: #f0f0f0;
+    --accent: #4ade80;
+    --dim: rgba(255,255,255,0.35);
+    --panel-bg: rgba(20,20,20,0.95);
+    --border: rgba(255,255,255,0.1);
+    --font-size: 36px;
+    --line-height: 1.9;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    overflow: hidden;
+  }
+
+  /* ── 顶部控制栏 ── */
+  #toolbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 20px;
+    background: var(--panel-bg);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(10px);
+    flex-wrap: wrap;
+  }
+
+  .tb-label {
+    font-size: 12px;
+    color: var(--dim);
+    white-space: nowrap;
+  }
+
+  .tb-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .tb-sep {
+    width: 1px;
+    height: 24px;
+    background: var(--border);
+    flex-shrink: 0;
+  }
+
+  /* 文件选择 */
+  #file-input, #file-input-full {
+    display: none;
+  }
+  .file-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .file-btn:hover { background: rgba(255,255,255,0.13); }
+  .file-btn.accent {
+    border-color: rgba(74,222,128,0.4);
+    background: rgba(74,222,128,0.07);
+    color: var(--accent);
+  }
+  .file-btn.accent:hover { background: rgba(74,222,128,0.14); }
+  #file-name {
+    font-size: 12px;
+    color: var(--dim);
+    max-width: 130px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* 滑块 */
+  input[type=range] {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.15);
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.3); }
+
+  .range-val {
+    min-width: 36px;
+    font-size: 12px;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* 按钮 */
+  .ctrl-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.05);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.15s, border-color 0.15s;
+    flex-shrink: 0;
+  }
+  .ctrl-btn:hover { background: rgba(255,255,255,0.12); }
+  .ctrl-btn.play-btn {
+    width: 42px; height: 36px;
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #000;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 8px;
+    gap: 4px;
+  }
+  .ctrl-btn.play-btn:hover { filter: brightness(1.1); }
+  .ctrl-btn.play-btn.playing { background: #f87171; border-color: #f87171; }
+  .ctrl-btn.active {
+    background: rgba(74,222,128,0.15);
+    border-color: rgba(74,222,128,0.5);
+    color: var(--accent);
+  }
+
+  /* 进度 */
+  #progress-bar-wrap {
+    flex: 1;
+    min-width: 100px;
+    height: 4px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+    cursor: pointer;
+    position: relative;
+  }
+  #progress-bar {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.3s linear;
+    pointer-events: none;
+  }
+  #progress-time {
+    font-size: 11px;
+    color: var(--dim);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  /* ── 双栏布局 ── */
+  #panels {
+    position: fixed;
+    top: 60px; left: 0; right: 0; bottom: 0;
+    display: flex;
+    gap: 0;
+    overflow: hidden;
+  }
+
+  .panel {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* 右栏分割线 */
+  #panel-full {
+    border-left: 1px solid rgba(255,255,255,0.07);
+    display: none; /* 默认隐藏，对照模式时显示 */
+  }
+  body.dual-mode #panel-full {
+    display: block;
+  }
+
+  /* 栏标签 */
+  .panel-label {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    color: rgba(255,255,255,0.2);
+    letter-spacing: 0.1em;
+    pointer-events: none;
+    z-index: 10;
+    white-space: nowrap;
+  }
+
+  .scroll-area {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    overflow: hidden;
+  }
+
+  .content-inner {
+    padding: 50vh clamp(16px, 5vw, 100px) 80vh;
+    will-change: transform;
+    transform: translateY(0);
+  }
+
+  /* ── Markdown 渲染样式 ── */
+  .md-body {
+    max-width: 760px;
+    margin: 0 auto;
+    font-size: var(--font-size);
+    line-height: var(--line-height);
+  }
+
+  /* 右栏逐字稿字号略小 */
+  #panel-full .md-body {
+    font-size: calc(var(--font-size) * 0.72);
+    color: rgba(255,255,255,0.55);
+    max-width: 720px;
+  }
+
+  /* h1 标题 */
+  .md-body h1 {
+    font-size: calc(var(--font-size) * 1.15);
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 0.5em;
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 0.3em;
+  }
+
+  /* h2 章节标题 */
+  .md-body h2 {
+    font-size: calc(var(--font-size) * 1.05);
+    font-weight: 600;
+    color: rgba(255,255,255,0.5);
+    margin-top: 1.2em;
+    margin-bottom: 0.4em;
+    letter-spacing: 0.05em;
+  }
+
+  /* h3 小节标题（Slide 分隔） */
+  .md-body h3 {
+    font-size: calc(var(--font-size) * 0.6);
+    font-weight: 500;
+    color: rgba(255,255,255,0.3);
+    margin-top: 2em;
+    margin-bottom: 0.6em;
+    padding: 4px 12px;
+    border-left: 3px solid rgba(255,255,255,0.2);
+  }
+
+  /* 正文段落 */
+  .md-body p {
+    margin-bottom: 0.6em;
+    color: var(--text);
+  }
+  #panel-full .md-body p {
+    color: rgba(255,255,255,0.55);
+  }
+
+  /* blockquote：元信息 */
+  .md-body blockquote {
+    border-left: 3px solid rgba(255,255,255,0.2);
+    padding: 2px 14px;
+    margin: 0.4em 0;
+    color: rgba(255,255,255,0.35);
+    font-size: calc(var(--font-size) * 0.55);
+  }
+
+  /* hr 分隔线 */
+  .md-body hr {
+    border: none;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    margin: 1.4em 0;
+  }
+
+  /* 粗体 */
+  .md-body strong {
+    color: #fff;
+    font-weight: 700;
+  }
+
+  /* 行内代码 */
+  .md-body code {
+    font-family: "SF Mono", "Menlo", monospace;
+    background: rgba(255,255,255,0.08);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    color: var(--accent);
+  }
+
+  /* 列表 */
+  .md-body ul, .md-body ol {
+    padding-left: 1.5em;
+    margin-bottom: 0.6em;
+  }
+  .md-body li { margin-bottom: 0.3em; }
+
+  /* ── 空状态 / 提示 ── */
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: calc(100vh - 60px);
+    gap: 16px;
+    color: rgba(255,255,255,0.2);
+    text-align: center;
+    padding: 40px;
+  }
+  .empty-state .icon { font-size: 64px; }
+  .empty-state h2 { font-size: 20px; font-weight: 500; }
+  .empty-state p { font-size: 14px; line-height: 1.7; }
+
+  /* 右栏空状态 */
+  #empty-full {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 12px;
+    color: rgba(255,255,255,0.15);
+    text-align: center;
+    padding: 40px;
+  }
+  #empty-full .icon { font-size: 48px; }
+  #empty-full p { font-size: 13px; line-height: 1.6; }
+
+  .drop-zone-active { outline: 2px dashed var(--accent) !important; }
+
+  /* ── 快捷键提示 ── */
+  #shortcut-hint {
+    position: fixed;
+    bottom: 16px;
+    right: 20px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.12);
+    line-height: 1.8;
+    text-align: right;
+    pointer-events: none;
+    z-index: 50;
+  }
+
+  /* 镜像翻转模式 */
+  body.mirror .content-inner {
+    transform: scaleX(-1) translateY(0);
+  }
+
+  /* ── Slide 同步：h3 锚点高亮 ── */
+  .md-body h3.slide-anchor {
+    position: relative;
+    scroll-margin-top: 80px;
+  }
+  .md-body h3.slide-anchor::before {
+    content: attr(data-slide-num);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px; height: 22px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.4);
+    margin-right: 8px;
+    vertical-align: middle;
+    transition: background 0.3s, color 0.3s;
+  }
+  .md-body h3.slide-anchor.active {
+    color: var(--accent) !important;
+    border-left-color: var(--accent) !important;
+  }
+  .md-body h3.slide-anchor.active::before {
+    background: var(--accent);
+    color: #000;
+  }
+
+  /* ── 连接状态徽标 ── */
+  #sync-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.04);
+    color: var(--dim);
+    white-space: nowrap;
+    transition: all 0.3s;
+    cursor: default;
+  }
+  #sync-badge .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    transition: background 0.3s;
+  }
+  #sync-badge.connected { color: var(--accent); border-color: rgba(74,222,128,0.3); background: rgba(74,222,128,0.06); }
+  #sync-badge.connected .dot { background: var(--accent); box-shadow: 0 0 6px var(--accent); animation: pulse-dot 2s infinite; }
+  #sync-badge.syncing .dot { background: #facc15; box-shadow: 0 0 6px #facc15; }
+  #sync-badge.syncing { color: #facc15; border-color: rgba(250,204,21,0.3); background: rgba(250,204,21,0.06); }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* ── Slide 当前段落高亮遮罩 ── */
+  .slide-section {
+    position: relative;
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin: -12px -16px;
+    transition: background 0.4s;
+  }
+  .slide-section.active {
+    background: rgba(74,222,128,0.05);
+    outline: 1px solid rgba(74,222,128,0.15);
+  }
+</style>
+</head>
+<body>
+
+<!-- 顶部控制栏 -->
+<div id="toolbar">
+
+  <!-- 提纲稿文件选择 -->
+  <div class="tb-group">
+    <label class="file-btn" for="file-input">
+      <span>📋</span> 提纲稿
+    </label>
+    <input type="file" id="file-input" accept=".md,.txt">
+    <span id="file-name">未选择</span>
+  </div>
+
+  <!-- 逐字稿文件选择 -->
+  <div class="tb-group">
+    <label class="file-btn accent" for="file-input-full">
+      <span>📄</span> 逐字稿
+    </label>
+    <input type="file" id="file-input-full" accept=".md,.txt">
+    <span id="file-name-full" style="font-size:12px;color:var(--dim);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">未选择</span>
+  </div>
+
+  <!-- 对照模式开关 -->
+  <button class="ctrl-btn" id="dual-btn" title="对照模式 (D)" style="width:auto;padding:0 12px;font-size:13px;gap:6px;">⊟ 对照</button>
+
+  <div class="tb-sep"></div>
+
+  <!-- 播放控制 -->
+  <div class="tb-group">
+    <button class="ctrl-btn play-btn" id="play-btn" title="播放/暂停 (Space)">▶ 播</button>
+    <button class="ctrl-btn" id="reset-btn" title="回到顶部 (R)">⏮</button>
+  </div>
+
+  <div class="tb-sep"></div>
+
+  <!-- 速度 -->
+  <div class="tb-group">
+    <span class="tb-label">速度</span>
+    <input type="range" id="speed-range" min="10" max="300" value="40" step="5" style="width:90px">
+    <span class="range-val" id="speed-val">40</span>
+  </div>
+
+  <div class="tb-sep"></div>
+
+  <!-- 字体大小 -->
+  <div class="tb-group">
+    <span class="tb-label">字号</span>
+    <button class="ctrl-btn" id="font-down" title="缩小 (-)" style="width:28px;height:28px;font-size:14px;">－</button>
+    <span class="range-val" id="font-val" style="min-width:44px;text-align:center;">36px</span>
+    <button class="ctrl-btn" id="font-up" title="放大 (+)" style="width:28px;height:28px;font-size:14px;">＋</button>
+  </div>
+
+  <div class="tb-sep"></div>
+
+  <!-- 进度 -->
+  <div id="progress-bar-wrap" title="点击跳转">
+    <div id="progress-bar" style="width:0%"></div>
+  </div>
+  <span id="progress-time">0%</span>
+
+  <div class="tb-sep"></div>
+
+  <!-- 镜像翻转 -->
+  <button class="ctrl-btn" id="mirror-btn" title="镜像翻转 (M)" style="font-size:13px;">⟺</button>
+
+  <div class="tb-sep"></div>
+
+  <!-- 同步状态 -->
+  <div id="sync-badge" title="幻灯片同步状态">
+    <span class="dot"></span>
+    <span id="sync-label">等待幻灯片</span>
+  </div>
+
+</div>
+
+<!-- 双栏面板 -->
+<div id="panels">
+
+  <!-- 左栏：提纲稿 -->
+  <div class="panel" id="panel-outline">
+    <div class="panel-label" id="label-outline" style="display:none">提纲稿</div>
+    <div class="scroll-area" id="scroll-outline">
+      <div class="content-inner" id="inner-outline">
+        <div class="empty-state" id="empty-outline">
+          <div class="icon">📜</div>
+          <h2>提词器已就绪</h2>
+          <p>点击左上角「提纲稿」选择口播提纲<br>或将 .md 文件<strong style="color:rgba(255,255,255,0.5)">拖拽</strong>到此处</p>
+        </div>
+        <div class="md-body" id="md-outline" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 右栏：逐字稿（对照模式） -->
+  <div class="panel" id="panel-full">
+    <div class="panel-label" id="label-full">逐字稿</div>
+    <div class="scroll-area" id="scroll-full">
+      <div class="content-inner" id="inner-full">
+        <div id="empty-full">
+          <div class="icon">📄</div>
+          <p>点击上方「逐字稿」加载<br>script-full.md</p>
+        </div>
+        <div class="md-body" id="md-full" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- 快捷键提示 -->
+<div id="shortcut-hint">
+  Space 播放/暂停 · R 回顶部<br>
+  ↑↓ 微调速度 · +- 字号<br>
+  D 对照模式 · M 镜像翻转
+</div>
+
+<script>
+// ─── 状态 ───────────────────────────────────────────────────────────────────
+let isPlaying = false;
+let scrollY = 0;
+let fontSize = 36;
+let animId = null;
+let lastTs = null;
+let dualMode = false;
+
+const SPEED_PX_PER_UNIT = 0.5;
+
+// ─── Slide 同步状态 ──────────────────────────────────────────────────────────
+let slideAnchors = [];      // 左栏提纲稿的 Slide 锚点
+let slideAnchorsFull = [];  // 右栏逐字稿的 Slide 锚点（用于右栏跳转）
+let currentSlide = 0;
+
+// ─── DOM 引用 ───────────────────────────────────────────────────────────────
+const scrollOutline  = document.getElementById('scroll-outline');
+const innerOutline   = document.getElementById('inner-outline');
+const mdOutline      = document.getElementById('md-outline');
+const emptyOutline   = document.getElementById('empty-outline');
+
+const scrollFull     = document.getElementById('scroll-full');
+const innerFull      = document.getElementById('inner-full');
+const mdFull         = document.getElementById('md-full');
+const emptyFull      = document.getElementById('empty-full');
+
+const playBtn        = document.getElementById('play-btn');
+const resetBtn       = document.getElementById('reset-btn');
+const speedRange     = document.getElementById('speed-range');
+const speedVal       = document.getElementById('speed-val');
+const fontVal        = document.getElementById('font-val');
+const fontUp         = document.getElementById('font-up');
+const fontDown       = document.getElementById('font-down');
+const fileInput      = document.getElementById('file-input');
+const fileInputFull  = document.getElementById('file-input-full');
+const fileName       = document.getElementById('file-name');
+const fileNameFull   = document.getElementById('file-name-full');
+const progressBar    = document.getElementById('progress-bar');
+const progressTime   = document.getElementById('progress-time');
+const mirrorBtn      = document.getElementById('mirror-btn');
+const syncBadge      = document.getElementById('sync-badge');
+const syncLabel      = document.getElementById('sync-label');
+const dualBtn        = document.getElementById('dual-btn');
+const labelOutline   = document.getElementById('label-outline');
+
+// ─── 对照模式开关 ────────────────────────────────────────────────────────────
+function setDualMode(on) {
+  dualMode = on;
+  if (on) {
+    document.body.classList.add('dual-mode');
+    dualBtn.classList.add('active');
+    labelOutline.style.display = 'block';
+  } else {
+    document.body.classList.remove('dual-mode');
+    dualBtn.classList.remove('active');
+    labelOutline.style.display = 'none';
+  }
+}
+
+dualBtn.addEventListener('click', () => setDualMode(!dualMode));
+
+// ─── 简易 Markdown 解析器 ────────────────────────────────────────────────────
+function parseMarkdown(md) {
+  const lines = md.split('\n');
+  let html = '';
+  let inList = false;
+  let listTag = '';
+  let inBlockquote = false;
+
+  const closeList = () => {
+    if (inList) { html += `</${listTag}>`; inList = false; listTag = ''; }
+  };
+  const closeBlockquote = () => {
+    if (inBlockquote) { html += '</blockquote>'; inBlockquote = false; }
+  };
+
+  const inline = (text) => {
+    return text
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/__(.+?)__/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      .replace(/_(.+?)_/g, '<em>$1</em>')
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/~~(.+?)~~/g, '<del>$1</del>');
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const raw = lines[i];
+    const line = raw.trimEnd();
+
+    const hMatch = line.match(/^(#{1,6})\s+(.+)/);
+    if (hMatch) {
+      closeList(); closeBlockquote();
+      const level = hMatch[1].length;
+      if (level === 2 || level === 3) {
+        const sNum = extractSlideNum(hMatch[2]);
+        if (sNum !== null) {
+          html += `<h3 class="slide-anchor" data-slide-num="${sNum}" id="slide-anchor-${sNum}">${inline(hMatch[2])}</h3>`;
+          continue;
+        }
+      }
+      html += `<h${level}>${inline(hMatch[2])}</h${level}>`;
+      continue;
+    }
+
+    if (/^[-*_]{3,}$/.test(line.trim())) {
+      closeList(); closeBlockquote();
+      html += '<hr>';
+      continue;
+    }
+
+    if (line.startsWith('> ')) {
+      closeList();
+      if (!inBlockquote) { html += '<blockquote>'; inBlockquote = true; }
+      else html += '<br>';
+      html += inline(line.slice(2));
+      continue;
+    } else {
+      closeBlockquote();
+    }
+
+    const ulMatch = line.match(/^[-*+]\s+(.+)/);
+    if (ulMatch) {
+      if (!inList || listTag !== 'ul') { closeList(); html += '<ul>'; inList = true; listTag = 'ul'; }
+      html += `<li>${inline(ulMatch[1])}</li>`;
+      continue;
+    }
+
+    const olMatch = line.match(/^\d+\.\s+(.+)/);
+    if (olMatch) {
+      if (!inList || listTag !== 'ol') { closeList(); html += '<ol>'; inList = true; listTag = 'ol'; }
+      html += `<li>${inline(olMatch[1])}</li>`;
+      continue;
+    }
+
+    if (line.trim() === '') {
+      closeList(); closeBlockquote();
+      continue;
+    }
+
+    closeList(); closeBlockquote();
+    html += `<p>${inline(line)}</p>`;
+  }
+
+  closeList(); closeBlockquote();
+  return html;
+}
+
+function extractSlideNum(text) {
+  const m = text.match(/[Ss]lide\s*(\d+)/);
+  return m ? parseInt(m[1], 10) : null;
+}
+
+// ─── 加载 Markdown（提纲稿，左栏） ──────────────────────────────────────────
+function loadOutline(text, name) {
+  mdOutline.innerHTML = parseMarkdown(text);
+  emptyOutline.style.display = 'none';
+  mdOutline.style.display = 'block';
+  fileName.textContent = name || '已加载';
+  resetScroll();
+
+  slideAnchors = [];
+  mdOutline.querySelectorAll('.slide-anchor').forEach(el => {
+    slideAnchors.push({ slideNum: parseInt(el.dataset.slideNum, 10), el });
+  });
+  currentSlide = 0;
+}
+
+// ─── 加载 Markdown（逐字稿，右栏） ──────────────────────────────────────────
+function loadFull(text, name) {
+  // 右栏逐字稿的 slide-anchor id 要区分，避免冲突
+  const html = parseMarkdown(text).replace(/id="slide-anchor-(\d+)"/g, 'id="full-anchor-$1"');
+  mdFull.innerHTML = html;
+  emptyFull.style.display = 'none';
+  mdFull.style.display = 'block';
+  fileNameFull.textContent = name || '已加载';
+  scrollFullY = 0;
+  applyScrollFull();
+
+  slideAnchorsFull = [];
+  mdFull.querySelectorAll('.slide-anchor').forEach(el => {
+    slideAnchorsFull.push({ slideNum: parseInt(el.dataset.slideNum, 10), el });
+  });
+
+  // 自动开启对照模式
+  setDualMode(true);
+}
+
+// ─── 文件读取 ────────────────────────────────────────────────────────────────
+fileInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => loadOutline(ev.target.result, file.name);
+  reader.readAsText(file, 'utf-8');
+});
+
+fileInputFull.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => loadFull(ev.target.result, file.name);
+  reader.readAsText(file, 'utf-8');
+});
+
+// 拖拽：拖到左栏加载提纲稿，拖到右栏加载逐字稿
+document.addEventListener('dragover', (e) => { e.preventDefault(); document.body.classList.add('drop-zone-active'); });
+document.addEventListener('dragleave', () => document.body.classList.remove('drop-zone-active'));
+document.addEventListener('drop', (e) => {
+  e.preventDefault();
+  document.body.classList.remove('drop-zone-active');
+  const file = e.dataTransfer.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  // 判断落点在左栏还是右栏
+  const panelFull = document.getElementById('panel-full');
+  const rect = panelFull.getBoundingClientRect();
+  const inRight = dualMode && e.clientX >= rect.left;
+  reader.onload = (ev) => {
+    if (inRight) loadFull(ev.target.result, file.name);
+    else loadOutline(ev.target.result, file.name);
+  };
+  reader.readAsText(file, 'utf-8');
+});
+
+// ─── 左栏滚动引擎 ────────────────────────────────────────────────────────────
+function getMaxScroll() {
+  return Math.max(0, innerOutline.offsetHeight - scrollOutline.offsetHeight);
+}
+
+function applyScroll() {
+  const max = getMaxScroll();
+  scrollY = Math.max(0, Math.min(scrollY, max));
+  innerOutline.style.transform = `translateY(${-scrollY}px)`;
+  const pct = max > 0 ? (scrollY / max * 100) : 0;
+  progressBar.style.width = pct.toFixed(1) + '%';
+  progressTime.textContent = pct.toFixed(0) + '%';
+
+  // 右栏同步滚动（按比例）
+  if (dualMode) {
+    const maxFull = getMaxScrollFull();
+    scrollFullY = pct / 100 * maxFull;
+    applyScrollFull();
+  }
+}
+
+// ─── 右栏滚动引擎 ────────────────────────────────────────────────────────────
+let scrollFullY = 0;
+
+function getMaxScrollFull() {
+  return Math.max(0, innerFull.offsetHeight - scrollFull.offsetHeight);
+}
+
+function applyScrollFull() {
+  const max = getMaxScrollFull();
+  scrollFullY = Math.max(0, Math.min(scrollFullY, max));
+  innerFull.style.transform = `translateY(${-scrollFullY}px)`;
+}
+
+// ─── 动画帧 ──────────────────────────────────────────────────────────────────
+function tick(ts) {
+  if (!isPlaying) return;
+  if (lastTs === null) lastTs = ts;
+  const dt = (ts - lastTs) / 1000;
+  lastTs = ts;
+
+  const pxPerSec = parseFloat(speedRange.value) * SPEED_PX_PER_UNIT;
+  scrollY += pxPerSec * dt;
+
+  applyScroll();
+
+  if (scrollY >= getMaxScroll()) {
+    stopScroll();
+    return;
+  }
+
+  animId = requestAnimationFrame(tick);
+}
+
+function startScroll() {
+  if (isPlaying) return;
+  isPlaying = true;
+  lastTs = null;
+  playBtn.textContent = '⏸ 停';
+  playBtn.classList.add('playing');
+  animId = requestAnimationFrame(tick);
+}
+
+function stopScroll() {
+  isPlaying = false;
+  lastTs = null;
+  if (animId) { cancelAnimationFrame(animId); animId = null; }
+  playBtn.textContent = '▶ 播';
+  playBtn.classList.remove('playing');
+}
+
+function togglePlay() {
+  if (isPlaying) stopScroll(); else startScroll();
+}
+
+function resetScroll() {
+  stopScroll();
+  scrollY = 0;
+  scrollFullY = 0;
+  applyScroll();
+  applyScrollFull();
+}
+
+// ─── 进度条点击跳转 ──────────────────────────────────────────────────────────
+document.getElementById('progress-bar-wrap').addEventListener('click', (e) => {
+  const rect = e.currentTarget.getBoundingClientRect();
+  const ratio = (e.clientX - rect.left) / rect.width;
+  scrollY = ratio * getMaxScroll();
+  applyScroll();
+});
+
+// ─── 速度控制 ────────────────────────────────────────────────────────────────
+speedRange.addEventListener('input', () => {
+  speedVal.textContent = speedRange.value;
+});
+
+// ─── 字体大小 ────────────────────────────────────────────────────────────────
+function setFontSize(size) {
+  fontSize = Math.max(16, Math.min(120, size));
+  document.documentElement.style.setProperty('--font-size', fontSize + 'px');
+  fontVal.textContent = fontSize + 'px';
+}
+fontUp.addEventListener('click', () => setFontSize(fontSize + 4));
+fontDown.addEventListener('click', () => setFontSize(fontSize - 4));
+
+// ─── 播放/重置按钮 ───────────────────────────────────────────────────────────
+playBtn.addEventListener('click', togglePlay);
+resetBtn.addEventListener('click', resetScroll);
+
+// ─── 镜像翻转 ────────────────────────────────────────────────────────────────
+mirrorBtn.addEventListener('click', () => document.body.classList.toggle('mirror'));
+
+// ─── 键盘快捷键 ──────────────────────────────────────────────────────────────
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT') return;
+  switch (e.key) {
+    case ' ':
+      e.preventDefault(); togglePlay(); break;
+    case 'r': case 'R':
+      resetScroll(); break;
+    case 'd': case 'D':
+      setDualMode(!dualMode); break;
+    case 'ArrowUp':
+      e.preventDefault();
+      speedRange.value = Math.min(300, +speedRange.value + 5);
+      speedVal.textContent = speedRange.value;
+      break;
+    case 'ArrowDown':
+      e.preventDefault();
+      speedRange.value = Math.max(10, +speedRange.value - 5);
+      speedVal.textContent = speedRange.value;
+      break;
+    case '+': case '=':
+      setFontSize(fontSize + 4); break;
+    case '-': case '_':
+      setFontSize(fontSize - 4); break;
+    case 'm': case 'M':
+      document.body.classList.toggle('mirror'); break;
+  }
+});
+
+// ─── 鼠标滚轮（左栏） ────────────────────────────────────────────────────────
+scrollOutline.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  scrollY += e.deltaY * 0.8;
+  applyScroll();
+}, { passive: false });
+
+// ─── 鼠标滚轮（右栏，独立手动） ──────────────────────────────────────────────
+scrollFull.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  scrollFullY += e.deltaY * 0.8;
+  applyScrollFull();
+}, { passive: false });
+
+// ══════════════════════════════════════════════════════════
+// ─── Slide 同步：BroadcastChannel ────────────────────────
+// ══════════════════════════════════════════════════════════
+
+const CHANNEL_NAME = 'slide-sync';
+let bc = null;
+let syncConnected = false;
+let lastHeartbeat = 0;
+let heartbeatTimer = null;
+
+let _scriptLoaded = false;
+let _scriptRequestTimer = null;
+
+function initBroadcastChannel() {
+  try {
+    bc = new BroadcastChannel(CHANNEL_NAME);
+    bc.onmessage = (e) => {
+      const { type, slide, text, name } = e.data || {};
+      if (type === 'reset') {
+        resetScroll();
+        _scriptLoaded = false;
+        setSyncStatus('connected', '幻灯片已刷新，等待开始');
+      } else if (type === 'heartbeat') {
+        lastHeartbeat = Date.now();
+        if (!syncConnected) {
+          syncConnected = true;
+          setSyncStatus('connected', '已连接幻灯片');
+        }
+        if (!_scriptLoaded) bc.postMessage({ type: 'request-script' });
+      } else if (type === 'load-script') {
+        lastHeartbeat = Date.now();
+        syncConnected = true;
+        if (!_scriptLoaded) {
+          _scriptLoaded = true;
+          loadOutline(text, name || 'script.md');
+          setSyncStatus('connected', '已连接幻灯片');
+          if (_scriptRequestTimer) { clearInterval(_scriptRequestTimer); _scriptRequestTimer = null; }
+          if (e.data.slide) {
+            requestAnimationFrame(() => requestAnimationFrame(() => jumpToSlide(e.data.slide)));
+          }
+          // 自动加载同目录的 script-full.md（逐字稿）
+          if (e.data.scriptUrl) {
+            const fullUrl = e.data.scriptUrl.replace(/script\.md$/, 'script-full.md');
+            fetch(fullUrl)
+              .then(r => r.ok ? r.text() : null)
+              .then(t => { if (t) loadFull(t, 'script-full.md'); })
+              .catch(() => {}); // 没有逐字稿就静默忽略
+          }
+        }
+      } else if (type === 'slide-change') {
+        lastHeartbeat = Date.now();
+        syncConnected = true;
+        jumpToSlide(slide);
+        if (!isPlaying) startScroll();
+      }
+    };
+
+    bc.postMessage({ type: 'request-script' });
+
+    _scriptRequestTimer = setInterval(() => {
+      if (_scriptLoaded) { clearInterval(_scriptRequestTimer); _scriptRequestTimer = null; return; }
+      if (syncConnected) bc.postMessage({ type: 'request-script' });
+    }, 3000);
+
+    heartbeatTimer = setInterval(() => {
+      if (syncConnected && Date.now() - lastHeartbeat > 5000) {
+        syncConnected = false;
+        setSyncStatus('', '等待幻灯片');
+      }
+    }, 2000);
+  } catch (e) {
+    console.warn('BroadcastChannel not supported');
+  }
+}
+
+function setSyncStatus(cls, label) {
+  syncBadge.classList.remove('connected', 'syncing');
+  if (cls) syncBadge.classList.add(cls);
+  syncLabel.textContent = label;
+}
+
+// 跳转到对应 Slide（左栏）
+function jumpToSlide(num) {
+  if (!slideAnchors.length) return;
+
+  slideAnchors.forEach(({ el }) => el.classList.remove('active'));
+  const target = slideAnchors.find(a => a.slideNum === num);
+  if (!target) return;
+
+  target.el.classList.add('active');
+  currentSlide = num;
+
+  setSyncStatus('syncing', `Slide ${num}`);
+  setTimeout(() => {
+    if (syncConnected) setSyncStatus('connected', `Slide ${num}`);
+  }, 600);
+
+  const anchorTop = target.el.offsetTop;
+  const targetY = Math.max(0, anchorTop - window.innerHeight * 0.40);
+
+  const wasPlaying = isPlaying;
+  stopScroll();
+  scrollY = targetY;
+  applyScroll();
+
+  // 右栏同步跳到对应 Slide
+  if (dualMode && slideAnchorsFull.length) {
+    slideAnchorsFull.forEach(({ el }) => el.classList.remove('active'));
+    const targetFull = slideAnchorsFull.find(a => a.slideNum === num);
+    if (targetFull) {
+      targetFull.el.classList.add('active');
+      const fullAnchorTop = targetFull.el.offsetTop;
+      scrollFullY = Math.max(0, fullAnchorTop - window.innerHeight * 0.40);
+      applyScrollFull();
+    }
+  }
+
+  if (wasPlaying) setTimeout(() => startScroll(), 400);
+}
+
+initBroadcastChannel();
+</script>
+</body>
+</html>
