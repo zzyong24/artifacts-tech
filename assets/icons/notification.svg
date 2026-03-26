@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- 通知/铃铛 -->
+  <path d="M24 4 Q24 6 26 8 Q36 10 36 24 L36 32 L12 32 L12 24 Q12 10 22 8 Q24 6 24 4"/>
+  <path d="M18 32 Q18 38 24 38 Q30 38 30 32"/>
+</svg>

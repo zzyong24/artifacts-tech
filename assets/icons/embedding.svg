@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- 向量/嵌入：坐标轴 + 点 + 箭头 -->
+  <line x1="8" y1="40" x2="8" y2="8"/>
+  <line x1="8" y1="40" x2="40" y2="40"/>
+  <!-- 轴箭头 -->
+  <polyline points="5,12 8,8 11,12"/>
+  <polyline points="36,37 40,40 36,43"/>
+  <!-- 散点 -->
+  <circle cx="16" cy="32" r="2.5" fill="currentColor" stroke="none" opacity="0.5"/>
+  <circle cx="22" cy="26" r="2.5" fill="currentColor" stroke="none" opacity="0.5"/>
+  <circle cx="28" cy="22" r="2.5" fill="currentColor" stroke="none" opacity="0.5"/>
+  <circle cx="34" cy="16" r="2.5" fill="currentColor" stroke="none" opacity="0.8"/>
+  <!-- 向量线 -->
+  <line x1="8" y1="40" x2="34" y2="16" stroke-width="1.5"/>
+  <polyline points="30,15 34,16 33,20" fill="none"/>
+</svg>

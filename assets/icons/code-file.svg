@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- 代码文件 -->
+  <path d="M10 6 L10 42 L38 42 L38 14 L30 6 Z"/>
+  <polyline points="30,6 30,14 38,14"/>
+  <!-- 代码括号 -->
+  <polyline points="16,22 12,26 16,30"/>
+  <polyline points="24,22 28,26 24,30"/>
+  <line x1="18" y1="34" x2="22" y2="20" stroke-width="1.5"/>
+</svg>

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- 复习/间隔重复：螺旋递进 -->
+  <path d="M24 40 Q10 40 10 28 Q10 18 20 16 Q30 14 34 22 Q38 30 30 34 Q22 38 18 32"/>
+  <polyline points="18,26 18,32 24,32"/>
+</svg>

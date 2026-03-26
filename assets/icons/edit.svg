@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- 编辑/铅笔 -->
+  <path d="M10 36 L12 26 L34 4 Q36 2 40 6 Q44 10 42 12 L20 34 Z"/>
+  <line x1="12" y1="26" x2="22" y2="36"/>
+  <line x1="30" y1="8" x2="40" y2="18"/>
+  <line x1="8" y1="40" x2="16" y2="36"/>
+</svg>

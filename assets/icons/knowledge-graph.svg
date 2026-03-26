@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- 知识图谱：节点+多连线 -->
+  <circle cx="24" cy="10" r="4"/>
+  <circle cx="8" cy="30" r="4"/>
+  <circle cx="40" cy="30" r="4"/>
+  <circle cx="18" cy="42" r="3"/>
+  <circle cx="34" cy="42" r="3"/>
+  <!-- 连线 -->
+  <line x1="21" y1="13" x2="11" y2="27"/>
+  <line x1="27" y1="13" x2="37" y2="27"/>
+  <line x1="8" y1="34" x2="16" y2="39"/>
+  <line x1="40" y1="34" x2="35" y2="39"/>
+  <line x1="12" y1="30" x2="36" y2="30" stroke-dasharray="3 2"/>
+  <line x1="21" y1="42" x2="31" y2="42" stroke-dasharray="3 2"/>
+</svg>

@@ -1,0 +1,31 @@
+{
+  "_comment": "01-text-is-interface 作品专属插图索引",
+  "_work": "01-text-is-interface",
+
+  "illustrations": [
+    {
+      "id": "interface-analogy",
+      "name": "文本接口类比总图",
+      "file": "interface-analogy.svg",
+      "size": { "width": 800, "height": 320 },
+      "slide": 3,
+      "desc": "展示视频/音频/图片 → 文本枢纽 → AI/你/未来的你，核心论点的视觉化"
+    },
+    {
+      "id": "info-loss-flow",
+      "name": "信息损耗流程对比图",
+      "file": "info-loss-flow.svg",
+      "size": { "width": 760, "height": 280 },
+      "slide": 5,
+      "desc": "视频路径（红色虚线+损耗方块）vs 文本路径（金色实线+满格方块）对比"
+    },
+    {
+      "id": "timeline-compare",
+      "name": "视频衰减 vs 文本增值时间线",
+      "file": "timeline-compare.svg",
+      "size": { "width": 720, "height": 300 },
+      "slide": 6,
+      "desc": "左侧视频随时间衰减（红色），右侧文本随时间增值（绿色上升趋势）"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- 钥匙 -->
+  <circle cx="16" cy="20" r="10"/>
+  <circle cx="16" cy="20" r="5"/>
+  <line x1="24" y1="26" x2="44" y2="40"/>
+  <line x1="36" y1="34" x2="36" y2="40"/>
+  <line x1="40" y1="37" x2="40" y2="43"/>
+</svg>

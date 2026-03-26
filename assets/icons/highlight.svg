@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- 高亮标记：马克笔扫过文字 -->
+  <line x1="6" y1="20" x2="42" y2="20" stroke-width="8" opacity="0.2" stroke-linecap="round"/>
+  <line x1="6" y1="20" x2="28" y2="20" stroke-width="8" opacity="0.15" stroke-linecap="round"/>
+  <line x1="10" y1="28" x2="38" y2="28"/>
+  <line x1="10" y1="34" x2="30" y2="34"/>
+  <!-- 马克笔 -->
+  <rect x="34" y="8" width="8" height="18" rx="2" transform="rotate(30 38 17)"/>
+</svg>

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- 链接 -->
+  <path d="M20 28 Q14 34 14 34 Q8 40 14 44 Q20 48 26 42 L32 36"/>
+  <path d="M28 20 Q34 14 34 14 Q40 8 34 4 Q28 0 22 6 L16 12"/>
+  <line x1="18" y1="30" x2="30" y2="18"/>
+</svg>

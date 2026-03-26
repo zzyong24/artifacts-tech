@@ -68,6 +68,13 @@
 - 每张 Slide 入场时自动触发第一步
 - 切换 Slide 时 reset 元素状态
 
+**素材引用规范（必须遵守）：**
+- 所有图标必须**内联为 SVG Sprite**（`<symbol>` + `<use href="#id">`），不得使用 `<img src="...">` 或外部路径
+- 所有插图必须直接将 SVG 代码**内联到 HTML**，不得用 `<img>` 引用文件路径
+- 原因：`python3 -m http.server` 从作品目录启动，`../../assets/` 路径越界导致 404
+- 使用前先查阅 `assets/index.json`，优先复用已有图标，避免重复造轮子
+- **若现有图标不满足需求，必须新建 SVG 文件到 `assets/icons/`，并在 `assets/index.json` 追加登记**
+
 **自我检查清单（生成后逐条验证）：**
 - [ ] 无 bullet point 列表（改为 layout 或动画）
 - [ ] 每张 Slide 只有一个认知单元
@@ -78,6 +85,8 @@
 - [ ] 动画时长均在 0.4–0.7s
 - [ ] 字体使用固定 px，不用 clamp/vw
 - [ ] GSAP 使用本地文件 `./gsap.min.js`
+- [ ] 所有 SVG 图标和插图已内联，无外部路径引用
+- [ ] 如有新图标，已同步更新 `assets/index.json`
 
 ### Step 6：复制 GSAP 依赖
 

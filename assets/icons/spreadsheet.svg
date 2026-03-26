@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- 电子表格 -->
+  <rect x="4" y="4" width="40" height="40" rx="3"/>
+  <!-- 列分隔 -->
+  <line x1="18" y1="4" x2="18" y2="44"/>
+  <line x1="32" y1="4" x2="32" y2="44"/>
+  <!-- 行分隔 -->
+  <line x1="4" y1="16" x2="44" y2="16"/>
+  <line x1="4" y1="28" x2="44" y2="28"/>
+  <!-- 表头底色暗示 -->
+  <rect x="4" y="4" width="40" height="12" rx="3" fill="currentColor" opacity="0.07" stroke="none"/>
+</svg>

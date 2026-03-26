@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- 飞书：抽象飞鸟/文档混合 -->
+  <rect x="8" y="6" width="28" height="36" rx="3"/>
+  <polyline points="8,14 36,14"/>
+  <line x1="14" y1="22" x2="30" y2="22"/>
+  <line x1="14" y1="28" x2="30" y2="28"/>
+  <line x1="14" y1="34" x2="24" y2="34"/>
+  <!-- 飞书特有的右上角协作标记 -->
+  <circle cx="38" cy="12" r="8" fill="none"/>
+  <line x1="34" y1="12" x2="42" y2="12"/>
+  <line x1="38" y1="8" x2="38" y2="16"/>
+</svg>

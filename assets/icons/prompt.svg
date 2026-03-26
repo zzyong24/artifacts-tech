@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Prompt：输入框 + 发送箭头 -->
+  <rect x="4" y="10" width="34" height="28" rx="4"/>
+  <line x1="10" y1="18" x2="30" y2="18"/>
+  <line x1="10" y1="24" x2="26" y2="24"/>
+  <line x1="10" y1="30" x2="20" y2="30"/>
+  <!-- 发送箭头 -->
+  <polyline points="34,20 44,24 34,28"/>
+  <line x1="38" y1="24" x2="44" y2="24"/>
+</svg>

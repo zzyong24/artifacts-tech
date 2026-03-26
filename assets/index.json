@@ -1,0 +1,107 @@
+{
+  "_comment": "可复用图标总索引 — 只登记 assets/icons/ 下跨作品通用的图标。插图(illustrations)由各作品自己的 illustrations/index.json 管理。",
+  "_version": "1.1.0",
+  "_updated": "2026-03-26",
+  "_rule": "新增图标：1) 放入 assets/icons/ 2) 在本文件追加一条记录 3) 图标必须使用 currentColor 保证主题适配",
+
+  "categories": {
+    "media":      "媒体内容",
+    "tools":      "工具应用",
+    "ai-tech":    "AI与技术",
+    "action":     "操作动作",
+    "knowledge":  "知识概念",
+    "abstract":   "抽象概念",
+    "social":     "人与社交"
+  },
+
+  "icons": [
+
+    { "id": "video",       "name": "视频摄像机",   "category": "media",     "tags": ["视频","摄像","媒体","被动接收","录制"] },
+    { "id": "audio",       "name": "麦克风/音频",  "category": "media",     "tags": ["音频","播客","录音","声音"] },
+    { "id": "image",       "name": "图片/照片",    "category": "media",     "tags": ["图片","图像","照片","媒体"] },
+    { "id": "pdf",         "name": "PDF文档",     "category": "media",     "tags": ["PDF","文档","文件","阅读"] },
+    { "id": "podcast",     "name": "播客",         "category": "media",     "tags": ["播客","音频","订阅","节目"] },
+    { "id": "book",        "name": "书籍",          "category": "media",     "tags": ["书","阅读","知识","纸质"] },
+    { "id": "article",     "name": "文章/博客",    "category": "media",     "tags": ["文章","博客","post","内容"] },
+    { "id": "slides",      "name": "幻灯片/PPT",   "category": "media",     "tags": ["PPT","演示","幻灯片","教学"] },
+    { "id": "subtitle",    "name": "字幕",          "category": "media",     "tags": ["字幕","转写","文字","SRT"] },
+    { "id": "spreadsheet", "name": "电子表格",      "category": "media",     "tags": ["表格","Excel","数据","结构化"] },
+    { "id": "code-file",   "name": "代码文件",      "category": "media",     "tags": ["代码","程序","文件","开发"] },
+    { "id": "text",        "name": "文本文档",      "category": "media",     "tags": ["文本","文档","笔记","知识","接口"] },
+
+    { "id": "obsidian",    "name": "Obsidian",     "category": "tools",     "tags": ["Obsidian","知识库","双链","笔记"] },
+    { "id": "notion",      "name": "Notion",       "category": "tools",     "tags": ["Notion","文档","协作","数据库"] },
+    { "id": "feishu",      "name": "飞书",          "category": "tools",     "tags": ["飞书","协作","文档","国内工具"] },
+    { "id": "logseq",      "name": "Logseq",       "category": "tools",     "tags": ["Logseq","双链","大纲","知识图谱"] },
+    { "id": "anki",        "name": "Anki闪卡",     "category": "tools",     "tags": ["Anki","间隔重复","记忆","学习"] },
+    { "id": "youtube",     "name": "YouTube",      "category": "tools",     "tags": ["YouTube","视频","平台","订阅"] },
+    { "id": "jianying",    "name": "剪映",          "category": "tools",     "tags": ["剪映","视频剪辑","字幕","转写"] },
+    { "id": "browser",     "name": "浏览器",        "category": "tools",     "tags": ["浏览器","网页","URL","上网"] },
+    { "id": "terminal",    "name": "终端/命令行",   "category": "tools",     "tags": ["终端","命令行","CLI","开发"] },
+    { "id": "vscode",      "name": "VS Code",      "category": "tools",     "tags": ["VSCode","编辑器","开发","代码"] },
+    { "id": "cursor",      "name": "Cursor",       "category": "tools",     "tags": ["Cursor","AI编辑器","代码","开发"] },
+    { "id": "github",      "name": "GitHub",       "category": "tools",     "tags": ["GitHub","代码","版本控制","开源"] },
+
+    { "id": "ai-brain",    "name": "AI大脑",        "category": "ai-tech",   "tags": ["AI","大模型","LLM","智能","理解"] },
+    { "id": "llm",         "name": "LLM层叠",       "category": "ai-tech",   "tags": ["LLM","Transformer","模型","层"] },
+    { "id": "prompt",      "name": "Prompt提示词",  "category": "ai-tech",   "tags": ["Prompt","提示词","输入","AI指令"] },
+    { "id": "token",       "name": "Token分词",     "category": "ai-tech",   "tags": ["Token","分词","上下文","长度"] },
+    { "id": "chip",        "name": "芯片",          "category": "ai-tech",   "tags": ["芯片","GPU","算力","硬件"] },
+    { "id": "embedding",   "name": "向量嵌入",      "category": "ai-tech",   "tags": ["向量","嵌入","语义","检索"] },
+    { "id": "robot",       "name": "机器人/Agent",  "category": "ai-tech",   "tags": ["Agent","机器人","自动化","AI"] },
+    { "id": "api",         "name": "API接口",       "category": "ai-tech",   "tags": ["API","接口","开发","连接"] },
+    { "id": "vector-db",   "name": "向量数据库",    "category": "ai-tech",   "tags": ["向量数据库","RAG","检索","存储"] },
+    { "id": "interface",   "name": "USB通用接口",   "category": "ai-tech",   "tags": ["接口","USB","通用","连接","协议"] },
+
+    { "id": "edit",        "name": "编辑/铅笔",     "category": "action",    "tags": ["编辑","修改","写作","创作"] },
+    { "id": "highlight",   "name": "高亮标记",      "category": "action",    "tags": ["高亮","标注","重点","划线"] },
+    { "id": "tag",         "name": "标签",           "category": "action",    "tags": ["标签","分类","打标","组织"] },
+    { "id": "link",        "name": "链接/超链接",   "category": "action",    "tags": ["链接","URL","引用","双链"] },
+    { "id": "copy",        "name": "复制",           "category": "action",    "tags": ["复制","粘贴","克隆","复用"] },
+    { "id": "export",      "name": "导出/上传",     "category": "action",    "tags": ["导出","上传","输出","发布"] },
+    { "id": "import",      "name": "导入/下载",     "category": "action",    "tags": ["导入","下载","输入","抓取"] },
+    { "id": "archive",     "name": "归档",           "category": "action",    "tags": ["归档","存储","整理","沉淀"] },
+    { "id": "refresh",     "name": "刷新/同步",     "category": "action",    "tags": ["刷新","同步","更新","循环"] },
+    { "id": "filter",      "name": "过滤/筛选",     "category": "action",    "tags": ["过滤","筛选","提炼","精华"] },
+    { "id": "merge",       "name": "合并/汇聚",     "category": "action",    "tags": ["合并","汇聚","整合","归一"] },
+    { "id": "search",      "name": "搜索",           "category": "action",    "tags": ["搜索","检索","查找","定位"] },
+
+    { "id": "mindmap",          "name": "思维导图",       "category": "knowledge",  "tags": ["思维导图","结构","发散","整理"] },
+    { "id": "connect",          "name": "关联/双链",      "category": "knowledge",  "tags": ["关联","双链","连接","语义"] },
+    { "id": "forget",           "name": "遗忘/消散",      "category": "knowledge",  "tags": ["遗忘","记忆衰减","消散","丢失"] },
+    { "id": "review",           "name": "复习/间隔重复",  "category": "knowledge",  "tags": ["复习","间隔重复","记忆","Anki"] },
+    { "id": "framework",        "name": "框架/脚手架",    "category": "knowledge",  "tags": ["框架","结构","布局","脚手架"] },
+    { "id": "idea",             "name": "灵感/想法",      "category": "knowledge",  "tags": ["灵感","想法","洞察","创意"] },
+    { "id": "knowledge-graph",  "name": "知识图谱",       "category": "knowledge",  "tags": ["知识图谱","节点","关系","语义网"] },
+    { "id": "methodology",      "name": "方法论/系统",    "category": "knowledge",  "tags": ["方法论","系统","体系","齿轮"] },
+    { "id": "density",          "name": "信息密度",       "category": "knowledge",  "tags": ["密度","信息量","精炼","提炼"] },
+    { "id": "bookmark",         "name": "收藏书签",       "category": "knowledge",  "tags": ["收藏","书签","保存","收藏夹"] },
+
+    { "id": "loop",        "name": "循环",           "category": "abstract",  "tags": ["循环","迭代","重复","周期"] },
+    { "id": "flow",        "name": "流动/流量",      "category": "abstract",  "tags": ["流动","流量","波形","传播"] },
+    { "id": "key",         "name": "钥匙/解锁",      "category": "abstract",  "tags": ["钥匙","解锁","权限","方法"] },
+    { "id": "hierarchy",   "name": "层级/台阶",      "category": "abstract",  "tags": ["层级","台阶","结构","树形"] },
+    { "id": "compare",     "name": "对比/天平",      "category": "abstract",  "tags": ["对比","权衡","比较","取舍"] },
+    { "id": "signal",      "name": "信号/强度",      "category": "abstract",  "tags": ["信号","强度","质量","层级"] },
+    { "id": "lightning",   "name": "闪电/突破",      "category": "abstract",  "tags": ["闪电","突破","快速","能量"] },
+    { "id": "rocket",      "name": "火箭/发布",      "category": "abstract",  "tags": ["火箭","发布","启动","增长"] },
+    { "id": "upgrade",     "name": "认知升级台阶",   "category": "abstract",  "tags": ["升级","迭代","成长","台阶","认知"] },
+    { "id": "time",        "name": "时钟/时间",      "category": "abstract",  "tags": ["时间","时钟","未来","迭代","持久"] },
+
+    { "id": "person",       "name": "个人/用户",    "category": "social",    "tags": ["个人","用户","自我","人物"] },
+    { "id": "community",    "name": "社群/多人",    "category": "social",    "tags": ["社群","团队","多人","协作"] },
+    { "id": "chat",         "name": "对话气泡",     "category": "social",    "tags": ["对话","评论","交互","追问","AI对话"] },
+    { "id": "share",        "name": "分享/传播",    "category": "social",    "tags": ["分享","传播","转发","扩散"] },
+    { "id": "like",         "name": "点赞/认可",    "category": "social",    "tags": ["点赞","认可","好评","互动"] },
+    { "id": "notification", "name": "通知/铃铛",    "category": "social",    "tags": ["通知","提醒","铃铛","消息"] }
+
+  ],
+
+  "_howto": {
+    "引用方式":     "<img src='../../assets/icons/{id}.svg'> 或内联 SVG",
+    "颜色继承":     "所有图标使用 currentColor，通过父元素 color: var(--accent) 等控制颜色",
+    "尺寸建议":     "装饰用 24-32px，功能图标 36-48px，教学大图标 64px+",
+    "新增图标":     "1) 新建 assets/icons/xxx.svg  2) 本文件追加一条记录",
+    "插图管理":     "插图存放在 assets/illustrations/{work-id}/，由各作品的 illustrations/index.json 管理"
+  }
+}

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- 浏览器 -->
+  <rect x="4" y="6" width="40" height="36" rx="4"/>
+  <line x1="4" y1="16" x2="44" y2="16"/>
+  <!-- 地址栏 -->
+  <rect x="14" y="9" width="22" height="4" rx="2"/>
+  <!-- 返回/前进按钮 -->
+  <circle cx="8" cy="11" r="2" fill="currentColor" stroke="none" opacity="0.4"/>
+</svg>

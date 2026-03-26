@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- 关联/双向链接 -->
+  <circle cx="12" cy="24" r="8"/>
+  <circle cx="36" cy="24" r="8"/>
+  <!-- 重叠区域暗示 -->
+  <path d="M20 18 Q24 24 20 30" stroke-width="1.5" opacity="0.5"/>
+  <path d="M28 18 Q24 24 28 30" stroke-width="1.5" opacity="0.5"/>
+</svg>

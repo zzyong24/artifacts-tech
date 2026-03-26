@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- API：接口插头 + 双向箭头 -->
+  <rect x="4" y="16" width="16" height="16" rx="3"/>
+  <rect x="28" y="16" width="16" height="16" rx="3"/>
+  <!-- 双向连线 -->
+  <line x1="20" y1="22" x2="28" y2="22"/>
+  <line x1="20" y1="26" x2="28" y2="26"/>
+  <polyline points="23,19 20,22 23,25"/>
+  <polyline points="25,21 28,24 25,27"/>
+  <!-- 标签 -->
+  <text x="8" y="27" font-family="monospace" font-size="7" fill="currentColor" stroke="none" font-weight="bold">APP</text>
+  <text x="30" y="27" font-family="monospace" font-size="7" fill="currentColor" stroke="none" font-weight="bold">API</text>
+</svg>

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Notion：N字形 logo 简化 -->
+  <rect x="8" y="4" width="32" height="40" rx="4"/>
+  <path d="M14 10 L14 36" stroke-width="3"/>
+  <path d="M14 10 L30 32" stroke-width="2.5"/>
+  <path d="M30 10 L30 36" stroke-width="3"/>
+</svg>

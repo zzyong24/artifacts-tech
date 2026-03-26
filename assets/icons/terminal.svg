@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- 终端/命令行 -->
+  <rect x="4" y="6" width="40" height="36" rx="4"/>
+  <line x1="4" y1="16" x2="44" y2="16"/>
+  <!-- 三个圆点 (macOS style) -->
+  <circle cx="11" cy="11" r="2.5" fill="currentColor" stroke="none" opacity="0.3"/>
+  <circle cx="19" cy="11" r="2.5" fill="currentColor" stroke="none" opacity="0.3"/>
+  <circle cx="27" cy="11" r="2.5" fill="currentColor" stroke="none" opacity="0.3"/>
+  <!-- 命令行提示符 -->
+  <polyline points="10,25 16,29 10,33" stroke-width="2"/>
+  <line x1="19" y1="33" x2="30" y2="33"/>
+</svg>

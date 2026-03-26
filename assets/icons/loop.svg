@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- 循环箭头（大圆圈） -->
+  <path d="M12 24 Q12 10 24 10 Q36 10 36 24 Q36 38 24 38 Q16 38 12 32"/>
+  <polyline points="8,28 12,32 16,28"/>
+</svg>

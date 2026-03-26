@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- 导入：盒子+向下箭头 -->
+  <polyline points="24,42 24,18"/>
+  <polyline points="14,32 24,42 34,32"/>
+  <path d="M10 28 L10 10 Q10 8 12 8 L36 8 Q38 8 38 10 L38 28"/>
+</svg>
