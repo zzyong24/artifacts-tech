@@ -966,6 +966,13 @@ function initBroadcastChannel() {
       if (type === 'reset') {
         resetScroll();
         _scriptLoaded = false;
+        // 清空右栏（避免切换作品时右栏残留旧内容）
+        const mdFull = document.getElementById('md-full');
+        const emptyFull = document.getElementById('empty-full');
+        if (mdFull) { mdFull.innerHTML = ''; mdFull.style.display = 'none'; }
+        if (emptyFull) emptyFull.style.display = '';
+        slideAnchorsFull.length = 0;
+        setDualMode(false);
         setSyncStatus('connected', '幻灯片已刷新，等待开始');
       } else if (type === 'heartbeat') {
         lastHeartbeat = Date.now();
