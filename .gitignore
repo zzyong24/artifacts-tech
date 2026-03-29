@@ -12,3 +12,16 @@ nohup.out
 
 # 本机配置（路径因机器不同，不提交）
 .claude/artifacts.config.json
+
+# 依赖
+node_modules/
+.venv/
+package-lock.json
+
+# 产物（音频/视频体积大，不提交）
+works/*/audio/
+works/*/video/
+_tts_test/
+
+# workbuddy
+.workbuddy/

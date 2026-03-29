@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>让创意更有黏性 — 竖版60s</title>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Space+Mono&family=Noto+Sans+SC:wght@400;900&display=swap" rel="stylesheet">
+  <script src="../vendor/gsap.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; height: 100%; background: #1a1410; overflow: hidden; }
+
+    :root {
+      --bg:      #f5f0e8;
+      --ink:     #1a1410;
+      --accent1: #c8432a;
+      --accent2: #2a5fc8;
+      --accent3: #e8a020;
+      --accent4: #2a8c4a;
+      --white:   #ffffff;
+      --font-display: 'Caveat', cursive;
+      --font-label:   'Space Mono', monospace;
+      --font-body:    'Noto Sans SC', sans-serif;
+    }
+
+    #deck[data-h="1920"] {
+      --size-hero:    125px;
+      --size-display: 106px;
+      --size-h1:      67px;
+      --size-h2:      46px;
+      --size-body:    31px;
+      --size-label:   22px;
+      --pad-slide: 60px;
+    }
+
+    #deck {
+      position: relative;
+      background: var(--bg);
+      background-image: radial-gradient(circle, rgba(26,20,16,.1) 1.5px, transparent 1.5px);
+      background-size: 40px 40px;
+      overflow: hidden;
+    }
+
+    .slide {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 100px 60px 580px 60px;
+      opacity: 0; pointer-events: none;
+      transition: opacity .35s ease;
+      text-align: center;
+    }
+    .slide.current { opacity: 1; pointer-events: all; }
+
+    #prog-wrap { position: absolute; bottom: 0; left: 0; right: 0; height: 5px; background: rgba(26,20,16,.12); z-index: 100; }
+    #prog { height: 100%; background: var(--accent1); transition: width .4s ease; }
+
+    .card {
+      background: var(--white); border: 2px solid var(--ink);
+      box-shadow: 6px 6px 0 var(--ink); border-radius: 4px;
+      padding: 36px 40px; width: 100%;
+    }
+
+    /* ── S1 居中冲击 ── */
+    #s1 .hook { font-family: var(--font-body); font-size: var(--size-h2); color: var(--ink); line-height: 1.6; max-width: 900px; }
+    #s1 .curse-name { font-family: var(--font-display); font-size: var(--size-hero); color: var(--accent1); margin-top: 40px; line-height: 1.1; }
+
+    /* ── S2 上图下文 ── */
+    #s2 { gap: 28px; }
+    #s2 .title { font-family: var(--font-display); font-size: var(--size-h1); color: var(--ink); }
+    .persons { display: flex; gap: 48px; justify-content: center; width: 100%; }
+    .person { text-align: center; }
+    .person .emo { font-size: 80px; }
+    .person .role { font-family: var(--font-label); font-size: var(--size-label); border: 2px solid var(--ink); padding: 6px 16px; margin-top: 8px; display: inline-block; }
+    .stats { display: flex; gap: 24px; width: 100%; }
+    .stat { flex: 1; text-align: center; padding: 28px; border: 2px solid var(--ink); background: var(--white); box-shadow: 4px 4px 0 var(--ink); }
+    .stat .num { font-family: var(--font-display); font-size: 88px; line-height: 1; }
+    .stat .desc { font-family: var(--font-body); font-size: var(--size-body); margin-top: 6px; opacity: .7; }
+    .stat.predicted .num { color: var(--accent2); }
+    .stat.actual .num { color: var(--accent1); }
+    #s2 .punchline { font-family: var(--font-body); font-size: var(--size-h2); color: var(--ink); line-height: 1.5; padding: 20px; border: 3px solid var(--accent1); background: rgba(200,67,42,.06); width: 100%; }
+
+    /* ── S3 卡片堆叠 ── */
+    #s3 { gap: 24px; }
+    #s3 .title { font-family: var(--font-display); font-size: var(--size-h1); color: var(--ink); }
+    #s3 .body { font-family: var(--font-body); font-size: var(--size-body); color: var(--ink); line-height: 1.6; max-width: 900px; }
+    .keywords { display: flex; gap: 16px; justify-content: center; }
+    .keywords .kw { font-family: var(--font-display); font-size: var(--size-h2); padding: 12px 28px; border: 2px solid var(--ink); background: var(--white); box-shadow: 4px 4px 0 var(--ink); }
+    #s3 .gold { font-family: var(--font-display); font-size: var(--size-h2); color: var(--accent3); margin-top: 8px; }
+
+    /* ── S4 居中冲击 ── */
+    #s4 .quote { font-family: var(--font-display); font-size: var(--size-h1); color: var(--accent1); line-height: 1.3; max-width: 900px; }
+    #s4 .cta { font-family: var(--font-body); font-size: var(--size-h2); color: var(--ink); margin-top: 40px; line-height: 1.5; }
+  </style>
+</head>
+<body>
+
+<div id="deck" data-w="1080" data-h="1920">
+
+  <!-- S1 开场钩子 -->
+  <div class="slide current" id="s1">
+    <div id="s1-hook" class="hook">你懂得越多，越说不清楚。<br>这不是玄学，有个专门的名字。</div>
+    <div id="s1-name" class="curse-name">知识的诅咒</div>
+  </div>
+
+  <!-- S2 敲节奏实验 -->
+  <div class="slide" id="s2">
+    <div id="s2-title" class="title">敲节奏实验</div>
+    <div class="persons">
+      <div id="s2-p1" class="person"><div class="emo">🎵</div><div class="role">敲节奏</div></div>
+      <div id="s2-p2" class="person"><div class="emo">🤔</div><div class="role">猜歌</div></div>
+    </div>
+    <div class="stats">
+      <div id="s2-stat1" class="stat predicted"><div class="num">50%</div><div class="desc">预测猜对率</div></div>
+      <div id="s2-stat2" class="stat actual"><div class="num">2.5%</div><div class="desc">实际猜对率</div></div>
+    </div>
+    <div id="s2-punch" class="punchline">你脑子里有旋律，<br>对方听到的只是——哒哒哒。</div>
+  </div>
+
+  <!-- S3 怎么破 -->
+  <div class="slide" id="s3">
+    <div id="s3-title" class="title">怎么破？</div>
+    <div id="s3-kw" class="keywords">
+      <div class="kw" style="color:var(--accent1)">简单</div>
+      <div class="kw" style="color:var(--accent2)">意外</div>
+      <div class="kw" style="color:var(--accent4)">具体</div>
+    </div>
+    <div id="s3-body" class="body">别解释，举例。<br>别讲道理，讲故事。</div>
+    <div id="s3-gold" class="gold">伊索寓言活了两千年，靠的不是论文，<br>是狐狸和葡萄。</div>
+  </div>
+
+  <!-- S4 收尾 -->
+  <div class="slide" id="s4">
+    <div id="s4-quote" class="quote">你以为你说清楚了，<br>但对方只听到了<br>哒哒哒。</div>
+    <div id="s4-cta" class="cta">记住：你面前的那个人，<br>是一张白纸，不是你。</div>
+  </div>
+
+  <div id="prog-wrap"><div id="prog"></div></div>
+</div>
+
+<script>
+const TOTAL = 4;
+let cur = 1;
+const stepIdx = {};
+function initStep(n) { stepIdx[n] = 0; }
+
+const slideSteps = {
+  1: [
+    () => gsap.to('#s1-hook', { autoAlpha:1, y:0, duration:.5, ease:'power3.out' }),
+    () => gsap.to('#s1-name', { autoAlpha:1, y:0, duration:.6, ease:'back.out(1.7)' }),
+  ],
+  2: [
+    () => gsap.to('#s2-title', { autoAlpha:1, y:0, duration:.4 }),
+    () => gsap.to(['#s2-p1','#s2-p2'], { autoAlpha:1, duration:.4, stagger:.15 }),
+    () => gsap.to('#s2-stat1', { autoAlpha:1, y:0, duration:.4 }),
+    () => gsap.to('#s2-stat2', { autoAlpha:1, y:0, duration:.5, ease:'back.out(1.5)' }),
+    () => gsap.to('#s2-punch', { autoAlpha:1, y:0, duration:.5 }),
+  ],
+  3: [
+    () => gsap.to('#s3-title', { autoAlpha:1, y:0, duration:.4, ease:'power3.out' }),
+    () => gsap.to('#s3-kw',    { autoAlpha:1, y:0, duration:.5, ease:'back.out(1.3)' }),
+    () => {
+      gsap.to('#s3-body', { autoAlpha:1, y:0, duration:.4 });
+      gsap.to('#s3-gold', { autoAlpha:1, y:0, duration:.5, delay:.3 });
+    },
+  ],
+  4: [
+    () => gsap.to('#s4-quote', { autoAlpha:1, y:0, duration:.6, ease:'power3.out' }),
+    () => gsap.to('#s4-cta',   { autoAlpha:1, y:0, duration:.5 }),
+  ],
+};
+
+function initAllSlides() {
+  gsap.set([
+    '#s1-hook','#s1-name',
+    '#s2-title','#s2-p1','#s2-p2','#s2-stat1','#s2-stat2','#s2-punch',
+    '#s3-title','#s3-kw','#s3-body','#s3-gold',
+    '#s4-quote','#s4-cta'
+  ], { autoAlpha:0, y:30 });
+}
+
+function resetSlide(n) {
+  gsap.killTweensOf('*');
+  const m = {
+    1: ['#s1-hook','#s1-name'],
+    2: ['#s2-title','#s2-p1','#s2-p2','#s2-stat1','#s2-stat2','#s2-punch'],
+    3: ['#s3-title','#s3-kw','#s3-body','#s3-gold'],
+    4: ['#s4-quote','#s4-cta'],
+  };
+  if (m[n]) gsap.set(m[n], { autoAlpha:0, y:30 });
+}
+
+function showSlide(n) {
+  document.querySelectorAll('.slide').forEach(s => s.classList.remove('current'));
+  document.getElementById('s' + n).classList.add('current');
+  cur = n;
+  resetSlide(n);
+  initStep(n);
+  document.getElementById('prog').style.width = (n / TOTAL * 100) + '%';
+  setTimeout(() => handleAdvance(), 80);
+}
+
+function handleAdvance() {
+  const steps = slideSteps[cur];
+  const idx = stepIdx[cur];
+  if (idx < steps.length) { steps[idx](); stepIdx[cur]++; }
+  else if (cur < TOTAL) showSlide(cur + 1);
+}
+
+document.addEventListener('click', handleAdvance);
+document.addEventListener('keydown', e => {
+  if (e.key === ' ' || e.key === 'ArrowRight') { e.preventDefault(); handleAdvance(); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); if (cur > 1) showSlide(cur - 1); }
+});
+
+function scaleCanvas() {
+  const deck = document.getElementById('deck');
+  const W = 1080, H = 1920;
+  const scale = Math.min(window.innerWidth / W, window.innerHeight / H);
+  deck.style.cssText = `width:${W}px;height:${H}px;transform:scale(${scale});transform-origin:top left;margin-left:${(window.innerWidth-W*scale)/2}px;margin-top:${(window.innerHeight-H*scale)/2}px;position:relative;`;
+}
+window.addEventListener('resize', scaleCanvas);
+scaleCanvas();
+
+initAllSlides();
+for (let i = 1; i <= TOTAL; i++) initStep(i);
+showSlide(1);
+</script>
+</body>
+</html>

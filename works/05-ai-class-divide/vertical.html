@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>2030：新贵族与数字农奴 v2</title>
+  <link rel="stylesheet" href="../vendor/fonts.css">
+  <script src="../vendor/gsap.min.js"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html,body{width:100%;height:100%;background:#000;overflow:hidden}
+    :root{
+      --bg:#0a0a0f;--ink:#ededed;
+      --red:#ff3b30;--green:#34d399;--blue:#38bdf8;--gold:#fbbf24;--purple:#a78bfa;
+      --dim:rgba(237,237,237,.45);
+      --font-d:'Inter',sans-serif;--font-l:'Fira Code',monospace;--font-b:'Noto Sans SC',sans-serif;
+    }
+    #deck[data-h="1920"]{
+      --hero:120px;--disp:96px;--h1:64px;--h2:44px;--body:30px;--label:20px;--cap:16px;
+    }
+    #deck{position:relative;background:var(--bg);overflow:hidden}
+
+    /* 背景粒子 */
+    .bg-particles{position:absolute;inset:0;pointer-events:none;z-index:0}
+    .bg-particles .dot{position:absolute;width:3px;height:3px;border-radius:50%;background:rgba(56,189,248,.15);animation:float-dot linear infinite}
+    @keyframes float-dot{0%{transform:translateY(0) scale(1);opacity:.3}50%{opacity:.6}100%{transform:translateY(-400px) scale(.5);opacity:0}}
+
+    /* 扫光 */
+    .bg-sweep{position:absolute;inset:0;pointer-events:none;z-index:0;
+      background:linear-gradient(180deg,transparent 40%,rgba(56,189,248,.03) 50%,transparent 60%);
+      background-size:100% 200%;animation:sweep 6s ease-in-out infinite}
+    @keyframes sweep{0%,100%{background-position:0 0}50%{background-position:0 100%}}
+
+    .slide{
+      position:absolute;inset:0;display:flex;flex-direction:column;
+      align-items:center;justify-content:center;
+      padding:80px 60px 520px;z-index:1;
+      opacity:0;pointer-events:none;transition:opacity .35s;text-align:center;
+    }
+    .slide.current{opacity:1;pointer-events:all}
+
+    #prog-wrap{position:absolute;bottom:0;left:0;right:0;height:4px;background:rgba(255,255,255,.06);z-index:100}
+    #prog{height:100%;background:var(--red);transition:width .4s}
+
+    /* 字幕层 — 抖音安全区适配 */
+    #subtitle-layer{
+      position:absolute;bottom:300px;left:40px;right:140px;z-index:99;
+      font-family:var(--font-b);font-size:34px;font-weight:700;color:#fff;
+      text-align:center;line-height:1.6;
+      text-shadow:0 2px 8px rgba(0,0,0,.9),0 0 24px rgba(0,0,0,.6);
+      background:rgba(0,0,0,.35);border-radius:12px;padding:12px 20px;
+      pointer-events:none;opacity:0;transition:opacity .3s;
+      max-height:120px;overflow:hidden;
+      display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+    }
+    #subtitle-layer.on{opacity:1}
+
+    .hero{font-family:var(--font-d);font-size:var(--hero);font-weight:900;color:var(--ink);line-height:1.1}
+    .h1{font-family:var(--font-d);font-size:var(--h1);font-weight:700;color:var(--ink);line-height:1.2}
+    .h2{font-family:var(--font-d);font-size:var(--h2);font-weight:700;color:var(--ink);line-height:1.3}
+    .body{font-family:var(--font-b);font-size:var(--body);color:var(--dim);line-height:1.7;max-width:960px}
+    .label{font-family:var(--font-l);font-size:var(--label);color:var(--dim);letter-spacing:.05em}
+    .accent{color:var(--red)}
+    .green{color:var(--green)}
+    .gold{color:var(--gold)}
+    .blue{color:var(--blue)}
+    .glow{text-shadow:0 0 20px currentColor,0 0 60px currentColor}
+
+    /* ── S1 数字冲击 ── */
+    #s1{gap:24px}
+    .score-row{display:flex;gap:28px;width:100%}
+    .score-box{flex:1;padding:36px 20px;border:1px solid rgba(255,255,255,.08);border-radius:12px;text-align:center;position:relative;overflow:hidden}
+    .score-box::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent 60%,rgba(56,189,248,.05));pointer-events:none}
+    .score-box .year{font-family:var(--font-l);font-size:var(--label);color:var(--dim)}
+    .score-box .num{font-family:var(--font-d);font-size:110px;font-weight:900;line-height:1}
+    .score-box .unit{font-family:var(--font-b);font-size:24px;color:var(--dim);margin-top:4px}
+    .score-box.old .num{color:var(--dim)}
+    .score-box.new{border-color:rgba(255,59,48,.3);box-shadow:0 0 40px rgba(255,59,48,.12)}
+    .score-box.new .num{color:var(--red)}
+    .growth-bar{width:6px;border-radius:3px;height:0;margin:0 auto;background:linear-gradient(to top,rgba(255,255,255,.1),var(--red))}
+
+    /* ── S2 两个朋友 ── */
+    #s2{gap:20px}
+    .person-card{width:100%;padding:24px 32px;border:1px solid rgba(255,255,255,.08);border-radius:12px;text-align:left;display:flex;align-items:center;gap:20px;position:relative;overflow:hidden}
+    .person-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;border-radius:2px}
+    .person-card.up::before{background:var(--green)}
+    .person-card.down::before{background:var(--red)}
+    .person-card .icon{font-size:48px;flex-shrink:0}
+    .person-card .name{font-family:var(--font-d);font-size:var(--h2);font-weight:700;color:var(--ink)}
+    .person-card .desc{font-family:var(--font-b);font-size:26px;color:var(--dim);margin-top:4px;line-height:1.5}
+    .gap-vis{width:100%;height:60px;position:relative;display:flex;align-items:center;justify-content:center}
+    .gap-vis .arrow{font-size:32px;color:var(--dim);animation:pulse-arrow 1.5s ease infinite}
+    @keyframes pulse-arrow{0%,100%{opacity:.3;transform:scaleY(1)}50%{opacity:1;transform:scaleY(1.3)}}
+
+    /* ── S3 技能蒸发 ── */
+    #s3{gap:24px}
+    .skill-tags{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;width:100%}
+    .skill-tag{font-family:var(--font-l);font-size:var(--label);padding:12px 24px;border:1px solid rgba(255,255,255,.12);border-radius:6px;color:var(--dim);position:relative;transition:all .5s}
+    .skill-tag.dead{border-color:rgba(255,59,48,.4);color:rgba(255,59,48,.7)}
+    .skill-tag.dead::after{content:'';position:absolute;top:50%;left:8px;right:8px;height:2px;background:var(--red);transform:scaleX(0);animation:strike .4s ease forwards}
+    @keyframes strike{to{transform:scaleX(1)}}
+
+    /* ── S4 编排者经济 ── */
+    #s4{gap:20px}
+    .orbit{width:320px;height:320px;position:relative;margin:0 auto}
+    .orbit-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:100px;height:100px;border-radius:50%;background:rgba(56,189,248,.1);border:2px solid var(--blue);display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-size:28px;font-weight:900;color:var(--blue)}
+    .orbit-ring{position:absolute;inset:0;border:1px dashed rgba(255,255,255,.08);border-radius:50%;animation:orbit-spin 20s linear infinite}
+    @keyframes orbit-spin{to{transform:rotate(360deg)}}
+    .orbit-node{position:absolute;width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:24px}
+    .orbit-node:nth-child(1){top:-26px;left:50%;margin-left:-26px}
+    .orbit-node:nth-child(2){top:50%;right:-26px;margin-top:-26px}
+    .orbit-node:nth-child(3){bottom:-26px;left:50%;margin-left:-26px}
+    .orbit-node:nth-child(4){top:50%;left:-26px;margin-top:-26px}
+    .thin-shell{display:flex;align-items:center;gap:16px;padding:16px 28px;border:1px solid rgba(255,255,255,.08);border-radius:8px;width:100%}
+    .thin-shell .num{font-family:var(--font-d);font-size:48px;font-weight:900;color:var(--gold)}
+    .thin-shell .eq{font-family:var(--font-d);font-size:32px;color:var(--dim)}
+    .thin-shell .num2{font-family:var(--font-d);font-size:48px;font-weight:900;color:var(--dim);text-decoration:line-through}
+
+    /* ── S5 NPC化 ── */
+    #s5{gap:20px}
+    .loop-ring{width:280px;height:280px;position:relative;margin:0 auto}
+    .loop-ring-circle{position:absolute;inset:0;border:2px solid rgba(255,59,48,.15);border-radius:50%}
+    .loop-ring-dot{position:absolute;width:12px;height:12px;border-radius:50%;background:var(--red);top:-6px;left:50%;margin-left:-6px;animation:loop-orbit 4s linear infinite;box-shadow:0 0 12px var(--red)}
+    @keyframes loop-orbit{to{transform:rotate(360deg);transform-origin:center 146px}}
+    .loop-item{display:flex;align-items:center;gap:14px;padding:12px 20px;font-family:var(--font-b);font-size:26px;color:var(--dim);text-align:left}
+    .loop-item .emoji{font-size:32px;flex-shrink:0}
+    .loop-items{width:100%;display:flex;flex-direction:column;gap:8px;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:240px}
+
+    /* ── S6 收尾 ── */
+    #s6{gap:32px}
+    .cta-btn{display:inline-block;padding:16px 48px;border:2px solid var(--red);border-radius:999px;font-family:var(--font-d);font-size:var(--h2);font-weight:700;color:var(--red);animation:cta-pulse 2s ease infinite}
+    @keyframes cta-pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,59,48,.3)}50%{box-shadow:0 0 0 16px rgba(255,59,48,0)}}
+  </style>
+</head>
+<body>
+<div id="deck" data-w="1080" data-h="1920">
+  <!-- 背景效果 -->
+  <div class="bg-sweep"></div>
+  <div class="bg-particles" id="particles"></div>
+
+  <!-- S1 数字冲击 -->
+  <div class="slide current" id="s1">
+    <div id="s1-label" class="label">AI 做小学数学题</div>
+    <div id="s1-scores" class="score-row">
+      <div class="score-box old"><div class="year">2021</div><div class="num" id="counter-old">0</div><div class="unit">分</div></div>
+      <div class="score-box new"><div class="year">2026</div><div class="num" id="counter-new">0</div><div class="unit">分</div></div>
+    </div>
+    <div id="s1-bar" class="growth-bar"></div>
+    <div id="s1-body" class="body">这条曲线不是缓慢爬升<br>是一根杆子，<span class="accent glow">垂直插进天空</span></div>
+  </div>
+
+  <!-- S2 两个朋友 -->
+  <div class="slide" id="s2">
+    <div id="s2-title" class="label">我认识两个人</div>
+    <div id="s2-up" class="person-card up">
+      <div class="icon">🚀</div>
+      <div><div class="name green">博主 A</div><div class="desc">用 AI 做内容，三人→一人<br>现在在"管理" AI</div></div>
+    </div>
+    <div id="s2-down" class="person-card down">
+      <div class="icon">📦</div>
+      <div><div class="name accent">质检员 B</div><div class="desc">八年经验 → 监督 AI → 送外卖</div></div>
+    </div>
+    <div id="s2-gap" class="gap-vis"><span class="arrow">↕</span><span style="font-family:var(--font-b);font-size:26px;color:var(--dim);margin-left:12px">距离正在加速拉大</span></div>
+  </div>
+
+  <!-- S3 技能蒸发 -->
+  <div class="slide" id="s3">
+    <div id="s3-title" class="h1">技能<span class="accent glow">蒸发</span></div>
+    <div id="s3-tags" class="skill-tags">
+      <div class="skill-tag" id="sk0">翻译</div>
+      <div class="skill-tag" id="sk1">校对</div>
+      <div class="skill-tag" id="sk2">排版</div>
+      <div class="skill-tag" id="sk3">基础编程</div>
+      <div class="skill-tag" id="sk4">数据整理</div>
+      <div class="skill-tag" id="sk5">客服话术</div>
+    </div>
+    <div id="s3-speed" class="h2" style="color:var(--gold)">马车夫 × <span style="font-size:64px">20</span> 倍速</div>
+    <div id="s3-punch" class="body">被替代的不只是体力劳动<br>是<span class="accent">所有标准化认知劳动</span><br>中产阶级的<span class="accent">全部护城河</span></div>
+  </div>
+
+  <!-- S4 编排者经济 -->
+  <div class="slide" id="s4">
+    <div id="s4-title" class="h1"><span class="blue">编排者</span>经济</div>
+    <div id="s4-orbit" class="orbit">
+      <div class="orbit-ring">
+        <div class="orbit-node">📝</div>
+        <div class="orbit-node">🎨</div>
+        <div class="orbit-node">📊</div>
+        <div class="orbit-node">🤖</div>
+      </div>
+      <div class="orbit-center">你</div>
+    </div>
+    <div id="s4-body" class="body">不一定会做，但知道<br>怎么把 AI 组合起来<span class="blue">让事情做成</span></div>
+    <div id="s4-shell" class="thin-shell">
+      <div class="num">10</div><div class="eq">人 =</div><div class="num2">500</div><div style="font-family:var(--font-b);font-size:var(--body);color:var(--dim)">人的公司</div>
+    </div>
+  </div>
+
+  <!-- S5 NPC化 -->
+  <div class="slide" id="s5">
+    <div id="s5-title" class="hero"><span class="accent glow">NPC</span></div>
+    <div id="s5-desc" class="body">更可怕的不是失业<br>是你<span class="accent">感觉不到</span>自己在往下走</div>
+    <div id="s5-loop" class="loop-ring">
+      <div class="loop-ring-circle"></div>
+      <div class="loop-ring-dot"></div>
+      <div class="loop-items">
+        <div class="loop-item"><div class="emoji">📱</div>刷推送</div>
+        <div class="loop-item"><div class="emoji">🤖</div>做任务</div>
+        <div class="loop-item"><div class="emoji">🎮</div>刷视频</div>
+        <div class="loop-item"><div class="emoji">😴</div>睡觉</div>
+      </div>
+    </div>
+    <div id="s5-punch" class="h2">不是不幸福<br>而是<span class="accent glow">不清醒</span></div>
+  </div>
+
+  <!-- S6 收尾 -->
+  <div class="slide" id="s6">
+    <div id="s6-q1" class="body" style="color:var(--ink)">那条往下走的路<br>开始时看起来和往上走的<span class="gold">一样的风景</span></div>
+    <div id="s6-q2" class="h1">时钟在走<br><span class="accent">窗口在收窄</span></div>
+    <div id="s6-cta" class="cta-btn">收藏 · 下条继续</div>
+  </div>
+
+  <div id="prog-wrap"><div id="prog"></div></div>
+  <div id="subtitle-layer"></div>
+</div>
+
+<script>
+/* ══════════ 背景粒子生成 ══════════ */
+(function(){
+  const c = document.getElementById('particles');
+  for(let i=0;i<20;i++){
+    const d=document.createElement('div');d.className='dot';
+    d.style.left=Math.random()*100+'%';
+    d.style.top=(60+Math.random()*40)+'%';
+    d.style.animationDuration=(8+Math.random()*12)+'s';
+    d.style.animationDelay=(-Math.random()*20)+'s';
+    c.appendChild(d);
+  }
+})();
+
+/* ══════════ 计数动画 ══════════ */
+function animateCounter(el, from, to, duration) {
+  duration = duration || 1200;
+  const start = performance.now();
+  function update(now) {
+    const t = Math.min((now - start) / duration, 1);
+    const ease = 1 - Math.pow(1-t, 3);
+    el.textContent = Math.round(from + (to - from) * ease);
+    if (t < 1) requestAnimationFrame(update);
+  }
+  requestAnimationFrame(update);
+}
+
+/* ══════════ 技能标签逐个划线 ══════════ */
+function strikeSkills() {
+  for(let i=0;i<6;i++){
+    setTimeout(()=>{
+      document.getElementById('sk'+i).classList.add('dead');
+    }, i * 150);
+  }
+}
+
+/* ══════════ 全局 ══════════ */
+const TOTAL = 6;
+let cur = 1;
+const stepIdx = {};
+function initStep(n) { stepIdx[n] = 0; }
+
+const slideSteps = {
+  1: [
+    () => {
+      gsap.to('#s1-label', { autoAlpha:1, y:0, duration:.4 });
+      gsap.to('#s1-scores', { autoAlpha:1, y:0, duration:.5, delay:.1 });
+      animateCounter(document.getElementById('counter-old'), 0, 35, 1000);
+    },
+    () => {
+      animateCounter(document.getElementById('counter-new'), 0, 99, 1500);
+      gsap.to('.score-box.new', { boxShadow:'0 0 60px rgba(255,59,48,.25)', duration:1 });
+    },
+    () => {
+      gsap.to('#s1-bar', { height:200, duration:1.5, ease:'power2.out' });
+      gsap.to('#s1-body', { autoAlpha:1, y:0, duration:.6, delay:.5 });
+    },
+  ],
+  2: [
+    () => {
+      gsap.to('#s2-title', { autoAlpha:1, y:0, duration:.3 });
+      gsap.to('#s2-up', { autoAlpha:1, x:0, duration:.5, ease:'power3.out', delay:.1 });
+    },
+    () => gsap.to('#s2-down', { autoAlpha:1, x:0, duration:.5, ease:'power3.out' }),
+    () => gsap.to('#s2-gap', { autoAlpha:1, y:0, duration:.5 }),
+  ],
+  3: [
+    () => gsap.to('#s3-title', { autoAlpha:1, y:0, duration:.5, ease:'back.out(1.5)' }),
+    () => {
+      gsap.to('#s3-tags', { autoAlpha:1, y:0, duration:.4 });
+      setTimeout(strikeSkills, 300);
+    },
+    () => {
+      gsap.to('#s3-speed', { autoAlpha:1, y:0, duration:.5 });
+      gsap.to('#s3-punch', { autoAlpha:1, y:0, duration:.5, delay:.3 });
+    },
+  ],
+  4: [
+    () => gsap.to('#s4-title', { autoAlpha:1, y:0, duration:.5, ease:'power3.out' }),
+    () => gsap.to('#s4-orbit', { autoAlpha:1, scale:1, duration:.8, ease:'back.out(1.3)' }),
+    () => {
+      gsap.to('#s4-body', { autoAlpha:1, y:0, duration:.5 });
+      gsap.to('#s4-shell', { autoAlpha:1, y:0, duration:.5, delay:.3 });
+    },
+  ],
+  5: [
+    () => gsap.to('#s5-title', { autoAlpha:1, scale:1, duration:.6, ease:'back.out(2)' }),
+    () => gsap.to('#s5-desc', { autoAlpha:1, y:0, duration:.5 }),
+    () => {
+      gsap.to('#s5-loop', { autoAlpha:1, scale:1, duration:.6 });
+      gsap.to('#s5-punch', { autoAlpha:1, y:0, duration:.5, delay:.5 });
+    },
+  ],
+  6: [
+    () => gsap.to('#s6-q1', { autoAlpha:1, y:0, duration:.6 }),
+    () => gsap.to('#s6-q2', { autoAlpha:1, y:0, duration:.5 }),
+    () => gsap.to('#s6-cta', { autoAlpha:1, y:0, duration:.6, ease:'back.out(1.5)' }),
+  ],
+};
+
+function initAllSlides() {
+  gsap.set([
+    '#s1-label','#s1-scores','#s1-body',
+    '#s2-title','#s2-gap',
+    '#s3-title','#s3-tags','#s3-speed','#s3-punch',
+    '#s4-title','#s4-body','#s4-shell',
+    '#s5-desc','#s5-punch',
+    '#s6-q1','#s6-q2','#s6-cta'
+  ], { autoAlpha:0, y:30 });
+  gsap.set(['#s2-up','#s2-down'], { autoAlpha:0, x:-30 });
+  gsap.set('#s4-orbit', { autoAlpha:0, scale:.85 });
+  gsap.set('#s5-title', { autoAlpha:0, scale:.7 });
+  gsap.set('#s5-loop', { autoAlpha:0, scale:.9 });
+  gsap.set('#s1-bar', { autoAlpha:1, height:0 });
+}
+
+function resetSlide(n) {
+  gsap.killTweensOf('*');
+  const m = {
+    1: ['#s1-label','#s1-scores','#s1-body'],
+    2: ['#s2-title','#s2-gap'],
+    3: ['#s3-title','#s3-tags','#s3-speed','#s3-punch'],
+    4: ['#s4-title','#s4-body','#s4-shell'],
+    5: ['#s5-desc','#s5-punch'],
+    6: ['#s6-q1','#s6-q2','#s6-cta'],
+  };
+  if(m[n]) gsap.set(m[n],{autoAlpha:0,y:30});
+  if(n===1){gsap.set('#s1-bar',{height:0});document.getElementById('counter-old').textContent='0';document.getElementById('counter-new').textContent='0'}
+  if(n===2) gsap.set(['#s2-up','#s2-down'],{autoAlpha:0,x:-30});
+  if(n===3) document.querySelectorAll('.skill-tag').forEach(t=>t.classList.remove('dead'));
+  if(n===4) gsap.set('#s4-orbit',{autoAlpha:0,scale:.85});
+  if(n===5){gsap.set('#s5-title',{autoAlpha:0,scale:.7});gsap.set('#s5-loop',{autoAlpha:0,scale:.9})}
+}
+
+function showSlide(n) {
+  document.querySelectorAll('.slide').forEach(s=>s.classList.remove('current'));
+  document.getElementById('s'+n).classList.add('current');
+  cur=n;resetSlide(n);initStep(n);
+  document.getElementById('prog').style.width=(n/TOTAL*100)+'%';
+  setTimeout(()=>handleAdvance(),80);
+}
+
+function handleAdvance(){
+  const steps=slideSteps[cur],idx=stepIdx[cur];
+  if(idx<steps.length){steps[idx]();stepIdx[cur]++}
+  else if(cur<TOTAL) showSlide(cur+1);
+}
+
+document.addEventListener('click',handleAdvance);
+document.addEventListener('keydown',e=>{
+  if(e.key===' '||e.key==='ArrowRight'){e.preventDefault();handleAdvance()}
+  if(e.key==='ArrowLeft'){e.preventDefault();if(cur>1)showSlide(cur-1)}
+});
+
+function scaleCanvas(){
+  const d=document.getElementById('deck'),W=1080,H=1920,s=Math.min(innerWidth/W,innerHeight/H);
+  d.style.cssText=`width:${W}px;height:${H}px;transform:scale(${s});transform-origin:top left;margin-left:${(innerWidth-W*s)/2}px;margin-top:${(innerHeight-H*s)/2}px;position:relative`;
+}
+addEventListener('resize',scaleCanvas);scaleCanvas();
+initAllSlides();for(let i=1;i<=TOTAL;i++)initStep(i);showSlide(1);
+</script>
+</body>
+</html>

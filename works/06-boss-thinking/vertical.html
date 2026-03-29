@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <title>老板思维 — 竖版</title>
+  <link rel="stylesheet" href="../vendor/fonts.css">
+  <script src="../vendor/gsap.min.js"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html,body{width:100%;height:100%;background:#1a1410;overflow:hidden}
+    :root{
+      --bg:#f5f0e8;--ink:#1a1410;
+      --red:#c8432a;--blue:#2a5fc8;--gold:#e8a020;--green:#2a8c4a;--purple:#6b3fa0;
+      --white:#fff;--dim:rgba(26,20,16,.5);
+      --fd:'Caveat',cursive;--fl:'Space Mono',monospace;--fb:'Noto Sans SC',sans-serif;
+    }
+    #deck[data-h="1920"]{
+      --hero:110px;--h1:64px;--h2:44px;--body:30px;--label:20px;
+    }
+    #deck{position:relative;background:var(--bg);background-image:radial-gradient(circle,rgba(26,20,16,.08) 1.5px,transparent 1.5px);background-size:40px 40px;overflow:hidden}
+
+    .slide{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 60px 520px;opacity:0;pointer-events:none;transition:opacity .35s;text-align:center}
+    .slide.current{opacity:1;pointer-events:all}
+
+    #prog-wrap{position:absolute;bottom:0;left:0;right:0;height:5px;background:rgba(26,20,16,.1);z-index:100}
+    #prog{height:100%;background:var(--red);transition:width .4s}
+
+    #subtitle-layer{position:absolute;bottom:300px;left:40px;right:140px;z-index:99;font-family:var(--fb);font-size:34px;font-weight:700;color:var(--ink);text-align:center;line-height:1.6;text-shadow:0 1px 4px rgba(245,240,232,.9);background:rgba(245,240,232,.65);border-radius:12px;padding:12px 20px;pointer-events:none;opacity:0;transition:opacity .3s;max-height:120px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+    #subtitle-layer.on{opacity:1}
+
+    .hero{font-family:var(--fd);font-size:var(--hero);color:var(--ink);line-height:1.1}
+    .h1{font-family:var(--fd);font-size:var(--h1);color:var(--ink);line-height:1.2}
+    .h2{font-family:var(--fd);font-size:var(--h2);color:var(--ink);line-height:1.3}
+    .body{font-family:var(--fb);font-size:var(--body);color:var(--ink);line-height:1.7;max-width:960px;opacity:.85}
+    .label{font-family:var(--fl);font-size:var(--label);color:var(--dim);letter-spacing:.05em}
+    .accent{color:var(--red)}
+    .blue{color:var(--blue)}
+    .gold{color:var(--gold)}
+    .card{background:var(--white);border:2px solid var(--ink);box-shadow:6px 6px 0 var(--ink);border-radius:4px;padding:28px 36px;width:100%;text-align:left}
+
+    /* S1 */
+    #s1{gap:24px}
+    .chat-bubble{width:100%;padding:20px 28px;border-radius:16px 16px 16px 4px;font-family:var(--fb);font-size:28px;color:var(--ink);line-height:1.5;position:relative}
+    .chat-bubble.user{background:var(--blue);color:var(--white);border-radius:16px 16px 4px 16px;text-align:right;margin-left:80px}
+    .chat-bubble.ai{background:var(--white);border:2px solid var(--ink);margin-right:80px}
+    .chat-label{font-family:var(--fl);font-size:16px;color:var(--dim);margin-bottom:4px}
+    .punchline{font-family:var(--fd);font-size:var(--h2);color:var(--red);margin-top:16px}
+
+    /* S2 */
+    #s2{gap:16px}
+    .fail-row{display:flex;gap:12px;width:100%;align-items:center}
+    .fail-input{flex:1;padding:16px 20px;border:2px dashed rgba(26,20,16,.2);border-radius:8px;font-family:var(--fb);font-size:26px;color:var(--dim);text-align:left}
+    .fail-result{font-size:32px;flex-shrink:0}
+    .boss-quotes{width:100%;display:flex;flex-direction:column;gap:10px}
+    .boss-quote{padding:14px 24px;border-left:4px solid var(--gold);background:rgba(232,160,32,.06);font-family:var(--fd);font-size:var(--h2);color:var(--ink);text-align:left}
+
+    /* S3 */
+    #s3{gap:20px}
+    .method-card{width:100%;padding:24px 28px;border:2px solid var(--ink);box-shadow:4px 4px 0 var(--ink);background:var(--white);text-align:left;display:flex;gap:20px;align-items:flex-start}
+    .method-card .num{font-family:var(--fd);font-size:48px;color:var(--red);flex-shrink:0;line-height:1}
+    .method-card .title{font-family:var(--fd);font-size:var(--h2);color:var(--ink)}
+    .method-card .desc{font-family:var(--fb);font-size:24px;color:var(--dim);margin-top:4px;line-height:1.5}
+
+    /* S4 */
+    #s4{gap:20px}
+    .value-test{width:100%;padding:32px;border:3px solid var(--gold);background:rgba(232,160,32,.06);text-align:center}
+    .value-test .question{font-family:var(--fd);font-size:var(--h1);color:var(--gold)}
+    .value-test .sub{font-family:var(--fb);font-size:24px;color:var(--dim);margin-top:8px}
+
+    /* S5 */
+    #s5{gap:24px}
+    .boss-grid{display:flex;gap:16px;width:100%}
+    .boss-item{flex:1;padding:20px;border:2px solid var(--ink);box-shadow:4px 4px 0 var(--ink);background:var(--white);text-align:center}
+    .boss-item .icon{font-size:40px}
+    .boss-item .text{font-family:var(--fb);font-size:22px;color:var(--ink);margin-top:8px}
+    .cta-btn{display:inline-block;padding:16px 48px;border:2px solid var(--red);border-radius:999px;font-family:var(--fd);font-size:var(--h2);color:var(--red);animation:pulse 2s ease infinite}
+    @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(200,67,42,.3)}50%{box-shadow:0 0 0 16px rgba(200,67,42,0)}}
+  </style>
+</head>
+<body>
+<div id="deck" data-w="1080" data-h="1920">
+
+  <!-- S1 开场钩子 -->
+  <div class="slide current" id="s1">
+    <div id="s1-b1" class="chat-bubble user"><div class="chat-label">我</div>帮我做个抖音视频，要有冲击感</div>
+    <div id="s1-b2" class="chat-bubble ai"><div class="chat-label">AI</div>已完成，请查看</div>
+    <div id="s1-b3" class="chat-bubble user"><div class="chat-label">我</div>不对，差点意思，你再改改</div>
+    <div id="s1-punch" class="punchline">这不就是我最讨厌的<br>那种老板吗？</div>
+  </div>
+
+  <!-- S2 你骂AI的话 -->
+  <div class="slide" id="s2">
+    <div id="s2-title" class="h1">你骂AI的话<br><span class="accent">老板骂过你</span></div>
+    <div id="s2-fails" style="width:100%;display:flex;flex-direction:column;gap:10px">
+      <div class="fail-row"><div class="fail-input">"帮我优化一下"</div><div class="fail-result">❌</div></div>
+      <div class="fail-row"><div class="fail-input">"风格再年轻一点"</div><div class="fail-result">❌</div></div>
+      <div class="fail-row"><div class="fail-input">"算了你重写"</div><div class="fail-result">❌</div></div>
+    </div>
+    <div id="s2-quotes" class="boss-quotes">
+      <div class="boss-quote">"方案再高端一点"</div>
+      <div class="boss-quote">"你再想想"</div>
+    </div>
+    <div id="s2-punch" class="body" style="margin-top:12px">不是老板无能。<br>是<span class="accent" style="font-weight:900">人类的通病</span>。</div>
+  </div>
+
+  <!-- S3 三个问题 -->
+  <div class="slide" id="s3">
+    <div id="s3-title" class="h1">三个问题<br>把<span class="gold">雾</span>变成<span class="blue">图纸</span></div>
+    <div id="s3-c1" class="method-card"><div class="num">1</div><div><div class="title">目标是什么？</div><div class="desc">把"好"拆成参数<br>AI就不迷路</div></div></div>
+    <div id="s3-c2" class="method-card"><div class="num">2</div><div><div class="title">约束是什么？</div><div class="desc">没有边界的需求<br>不是自由，是混乱</div></div></div>
+    <div id="s3-c3" class="method-card"><div class="num">3</div><div><div class="title">验收标准？</div><div class="desc">给AI下指令 = 定义接口<br>思维清楚 > 语文好</div></div></div>
+  </div>
+
+  <!-- S4 需求价值 -->
+  <div class="slide" id="s4">
+    <div id="s4-title" class="h1">不是所有需求<br><span class="accent">都该做</span></div>
+    <div id="s4-body" class="body">一天给AI派十几个任务<br>晚上回头一看，大部分没用<br>只是在享受<span class="accent">"一说话就有人干活"</span>的快感</div>
+    <div id="s4-test" class="value-test">
+      <div class="question">做完之后<br>世界有什么不同？</div>
+      <div class="sub">答不上来 → 这个需求不该存在</div>
+    </div>
+  </div>
+
+  <!-- S5 每个人都是老板 -->
+  <div class="slide" id="s5">
+    <div id="s5-title" class="hero">每个人<br>都是<span class="accent">老板</span>了</div>
+    <div id="s5-grid" class="boss-grid">
+      <div class="boss-item"><div class="icon">💻</div><div class="text">写代码</div></div>
+      <div class="boss-item"><div class="icon">🎨</div><div class="text">做设计</div></div>
+      <div class="boss-item"><div class="icon">📊</div><div class="text">分析</div></div>
+      <div class="boss-item"><div class="icon">📧</div><div class="text">回邮件</div></div>
+    </div>
+    <div id="s5-punch" class="body" style="font-weight:700;color:var(--ink);opacity:1">你管理AI的上限<br>就是你<span class="accent">思考的上限</span></div>
+    <div id="s5-cta" class="cta-btn">收藏 · 下条继续</div>
+  </div>
+
+  <div id="prog-wrap"><div id="prog"></div></div>
+  <div id="subtitle-layer"></div>
+</div>
+<script>
+const TOTAL=5;let cur=1;const stepIdx={};
+function initStep(n){stepIdx[n]=0}
+
+const slideSteps={
+  1:[
+    ()=>gsap.to('#s1-b1',{autoAlpha:1,x:0,duration:.4,ease:'power3.out'}),
+    ()=>gsap.to('#s1-b2',{autoAlpha:1,x:0,duration:.4,ease:'power3.out'}),
+    ()=>{gsap.to('#s1-b3',{autoAlpha:1,x:0,duration:.4});gsap.to('#s1-punch',{autoAlpha:1,y:0,duration:.5,delay:.3,ease:'back.out(1.5)'})},
+  ],
+  2:[
+    ()=>gsap.to('#s2-title',{autoAlpha:1,y:0,duration:.5,ease:'power3.out'}),
+    ()=>gsap.to('#s2-fails',{autoAlpha:1,y:0,duration:.5}),
+    ()=>gsap.to('#s2-quotes',{autoAlpha:1,y:0,duration:.5}),
+    ()=>gsap.to('#s2-punch',{autoAlpha:1,y:0,duration:.5}),
+  ],
+  3:[
+    ()=>gsap.to('#s3-title',{autoAlpha:1,y:0,duration:.5,ease:'back.out(1.3)'}),
+    ()=>gsap.to('#s3-c1',{autoAlpha:1,y:0,duration:.4,ease:'power3.out'}),
+    ()=>gsap.to('#s3-c2',{autoAlpha:1,y:0,duration:.4,ease:'power3.out'}),
+    ()=>gsap.to('#s3-c3',{autoAlpha:1,y:0,duration:.4,ease:'power3.out'}),
+  ],
+  4:[
+    ()=>gsap.to('#s4-title',{autoAlpha:1,y:0,duration:.5}),
+    ()=>gsap.to('#s4-body',{autoAlpha:1,y:0,duration:.5}),
+    ()=>gsap.to('#s4-test',{autoAlpha:1,scale:1,duration:.6,ease:'back.out(1.5)'}),
+  ],
+  5:[
+    ()=>gsap.to('#s5-title',{autoAlpha:1,y:0,duration:.6,ease:'power3.out'}),
+    ()=>gsap.to('#s5-grid',{autoAlpha:1,y:0,duration:.5}),
+    ()=>gsap.to('#s5-punch',{autoAlpha:1,y:0,duration:.5}),
+    ()=>gsap.to('#s5-cta',{autoAlpha:1,y:0,duration:.5,ease:'back.out(1.5)'}),
+  ],
+};
+
+function initAllSlides(){
+  gsap.set(['#s1-b1','#s1-b2','#s1-b3'],{autoAlpha:0,x:30});
+  gsap.set('#s1-punch',{autoAlpha:0,y:20});
+  gsap.set(['#s2-title','#s2-fails','#s2-quotes','#s2-punch','#s3-title','#s3-c1','#s3-c2','#s3-c3','#s4-title','#s4-body','#s5-title','#s5-grid','#s5-punch','#s5-cta'],{autoAlpha:0,y:30});
+  gsap.set('#s4-test',{autoAlpha:0,scale:.9});
+}
+function resetSlide(n){
+  gsap.killTweensOf('*');
+  const m={
+    1:()=>{gsap.set(['#s1-b1','#s1-b2','#s1-b3'],{autoAlpha:0,x:30});gsap.set('#s1-punch',{autoAlpha:0,y:20})},
+    2:()=>gsap.set(['#s2-title','#s2-fails','#s2-quotes','#s2-punch'],{autoAlpha:0,y:30}),
+    3:()=>gsap.set(['#s3-title','#s3-c1','#s3-c2','#s3-c3'],{autoAlpha:0,y:30}),
+    4:()=>{gsap.set(['#s4-title','#s4-body'],{autoAlpha:0,y:30});gsap.set('#s4-test',{autoAlpha:0,scale:.9})},
+    5:()=>gsap.set(['#s5-title','#s5-grid','#s5-punch','#s5-cta'],{autoAlpha:0,y:30}),
+  };
+  if(m[n])m[n]();
+}
+function showSlide(n){
+  document.querySelectorAll('.slide').forEach(s=>s.classList.remove('current'));
+  document.getElementById('s'+n).classList.add('current');
+  cur=n;resetSlide(n);initStep(n);
+  document.getElementById('prog').style.width=(n/TOTAL*100)+'%';
+  setTimeout(()=>handleAdvance(),80);
+}
+function handleAdvance(){
+  const steps=slideSteps[cur],idx=stepIdx[cur];
+  if(idx<steps.length){steps[idx]();stepIdx[cur]++}
+  else if(cur<TOTAL)showSlide(cur+1);
+}
+document.addEventListener('click',handleAdvance);
+document.addEventListener('keydown',e=>{
+  if(e.key===' '||e.key==='ArrowRight'){e.preventDefault();handleAdvance()}
+  if(e.key==='ArrowLeft'){e.preventDefault();if(cur>1)showSlide(cur-1)}
+});
+function scaleCanvas(){
+  const d=document.getElementById('deck'),W=1080,H=1920,s=Math.min(innerWidth/W,innerHeight/H);
+  d.style.cssText=`width:${W}px;height:${H}px;transform:scale(${s});transform-origin:top left;margin-left:${(innerWidth-W*s)/2}px;margin-top:${(innerHeight-H*s)/2}px;position:relative`;
+}
+addEventListener('resize',scaleCanvas);scaleCanvas();
+initAllSlides();for(let i=1;i<=TOTAL;i++)initStep(i);showSlide(1);
+</script>
+</body>
+</html>

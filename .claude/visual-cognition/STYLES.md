@@ -492,6 +492,101 @@
 
 ---
 
+## 竖版字号覆盖（9:16, 1080×1920）
+
+> 所有主题在竖版画布下统一覆盖字号（×1.2）和间距。
+> 在 `vertical.html` 中追加以下 CSS 块即可。
+
+### 主题 1 竖版覆盖
+
+```css
+#deck[data-h="1920"] {
+  --size-hero:    125px;  --size-display: 106px;
+  --size-h1:      62px;   --size-h2:      43px;
+  --size-body:    31px;   --size-label:   22px;
+  --size-caption: 17px;   --pad-slide:    60px;
+}
+```
+
+### 主题 2 竖版覆盖
+
+```css
+#deck[data-h="1920"] {
+  --size-hero:    96px;   --size-display: 77px;
+  --size-h1:      53px;   --size-h2:      36px;
+  --size-body:    26px;   --size-label:   19px;
+  --pad-slide:    60px;
+}
+```
+
+### 主题 3 竖版覆盖
+
+```css
+#deck[data-h="1920"] {
+  --size-hero:    86px;   --size-display: 72px;
+  --size-h1:      48px;   --size-h2:      34px;
+  --size-body:    24px;   --size-label:   18px;
+  --pad-slide:    60px;
+}
+```
+
+### 主题 4 竖版覆盖
+
+```css
+#deck[data-h="1920"] {
+  --size-hero:    115px;  --size-display: 96px;
+  --size-h1:      58px;   --size-h2:      38px;
+  --size-body:    26px;   --size-label:   19px;
+  --pad-slide:    60px;
+}
+```
+
+### 主题 5 竖版覆盖
+
+```css
+#deck[data-h="1920"] {
+  --size-hero:    115px;  --size-display: 96px;
+  --size-h1:      62px;   --size-h2:      43px;
+  --size-body:    34px;   --size-label:   24px;
+  --pad-slide:    60px;
+}
+```
+
+### 主题 6 竖版覆盖
+
+```css
+#deck[data-h="1920"] {
+  --size-hero:    77px;   --size-display: 62px;
+  --size-h1:      43px;   --size-h2:      31px;
+  --size-body:    24px;   --size-label:   17px;
+  --pad-slide:    60px;
+}
+```
+
+### 主题 7 竖版覆盖
+
+```css
+#deck[data-h="1920"] {
+  --size-hero:    106px;  --size-display: 86px;
+  --size-h1:      53px;   --size-h2:      36px;
+  --size-body:    26px;   --size-label:   19px;
+  --pad-slide:    60px;
+}
+```
+
+### 主题 8 竖版覆盖
+
+```css
+#deck[data-h="1920"] {
+  --size-hero:    144px;  --size-display: 115px;
+  --size-h1:      72px;   --size-h2:      48px;
+  --size-body:    34px;   --size-label:   22px;
+  --pad-slide:    60px;
+}
+```
+
+---
+
 ## 字体引入快速参考
 
 ```html
