@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>文本是知识的接口</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Space+Mono&family=Noto+Sans+SC:wght@400;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #f5f0e8;
+  --ink:     #1a1410;
+  --accent1: #c8432a;
+  --accent2: #2a5fc8;
+  --accent3: #e8a020;
+  --accent4: #2a8c4a;
+  --accent5: #6b3fa0;
+  --white:   #ffffff;
+  --cream:   #fdfaf4;
+  --font-display: 'Caveat', cursive;
+  --font-label:   'Space Mono', monospace;
+  --font-body:    'Noto Sans SC', sans-serif;
+  --size-hero:    104px;
+  --size-display: 88px;
+  --size-h1:      56px;
+  --size-h2:      38px;
+  --size-body:    26px;
+  --size-label:   18px;
+  --size-caption: 14px;
+  --gap-sm:    12px;
+  --gap-md:    28px;
+  --gap-lg:    56px;
+  --pad-slide: 72px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: #111; }
+
+#deck {
+  position: absolute;
+  background: var(--bg);
+  background-image: radial-gradient(circle, rgba(26,20,16,.1) 1.5px, transparent 1.5px);
+  background-size: 40px 40px;
+  overflow: hidden;
+}
+
+#prog-wrap { position: absolute; top: 0; left: 0; right: 0; height: 4px; background: rgba(26,20,16,.1); z-index: 100; }
+#prog { height: 100%; background: var(--accent1); width: 0; transition: width .4s ease; }
+#slide-num { position: absolute; bottom: 20px; right: 28px; font-family: var(--font-label); font-size: 14px; color: rgba(26,20,16,.35); z-index: 100; }
+
+.slide { position: absolute; inset: 0; padding: var(--pad-slide); display: flex; flex-direction: column; justify-content: center; align-items: flex-start; opacity: 0; pointer-events: none; transition: opacity .35s ease; }
+.slide.current { opacity: 1; pointer-events: all; }
+
+.tag { font-family: var(--font-label); font-size: var(--size-label); letter-spacing: .06em; opacity: .45; margin-bottom: 20px; }
+.display { font-family: var(--font-display); font-size: var(--size-display); line-height: 1.1; color: var(--ink); }
+.h1 { font-family: var(--font-display); font-size: var(--size-h1); line-height: 1.2; color: var(--ink); }
+.h2 { font-family: var(--font-display); font-size: var(--size-h2); line-height: 1.3; color: var(--ink); }
+.body { font-family: var(--font-body); font-size: var(--size-body); line-height: 1.65; color: var(--ink); }
+.label { font-family: var(--font-label); font-size: var(--size-label); }
+.accent1{color:var(--accent1)} .accent2{color:var(--accent2)} .accent3{color:var(--accent3)} .accent4{color:var(--accent4)} .accent5{color:var(--accent5)}
+
+.card { background:var(--white); border:2px solid var(--ink); box-shadow:6px 6px 0 var(--ink); border-radius:4px; padding:28px 36px; }
+.card-red   { border-color:var(--accent1); box-shadow:6px 6px 0 var(--accent1); }
+.card-blue  { border-color:var(--accent2); box-shadow:6px 6px 0 var(--accent2); }
+.card-gold  { border-color:var(--accent3); box-shadow:6px 6px 0 var(--accent3); }
+.card-green { border-color:var(--accent4); box-shadow:6px 6px 0 var(--accent4); }
+
+/* S1 */
+#s1-eyebrow { font-family:var(--font-label); font-size:20px; opacity:.4; letter-spacing:.08em; }
+#s1-title   { font-family:var(--font-display); font-size:100px; line-height:1.05; color:var(--accent2); }
+#s1-sub     { font-family:var(--font-body); font-size:28px; opacity:.65; margin-top:6px; }
+#s1-rule    { width:0; height:4px; background:var(--accent1); border-radius:2px; margin:24px 0; }
+#s1-badge   { position:absolute; bottom:72px; right:72px; background:var(--accent3); color:var(--ink); font-family:var(--font-label); font-size:16px; padding:10px 20px; border:2px solid var(--ink); box-shadow:4px 4px 0 var(--ink); border-radius:4px; }
+
+/* S2 */
+#s2-items  { display:flex; flex-direction:column; gap:18px; margin-top:8px; width:100%; }
+.pain-item { display:flex; align-items:flex-start; gap:20px; padding:22px 30px; background:var(--white); border:2px solid var(--ink); box-shadow:5px 5px 0 var(--ink); border-radius:4px; opacity:0; transform:translateX(-30px); font-family:var(--font-body); font-size:var(--size-body); }
+.pain-num  { font-family:var(--font-display); font-size:48px; color:var(--accent1); line-height:1; flex-shrink:0; }
+
+/* S3 */
+#s3-vs { display:flex; align-items:center; gap:48px; margin-top:28px; width:100%; }
+.vs-box { flex:1; padding:32px 36px; border:3px solid var(--ink); border-radius:4px; box-shadow:7px 7px 0 var(--ink); text-align:center; opacity:0; transform:scale(.92); }
+.vs-box.bad  { background:rgba(200,67,42,.07); }
+.vs-box.good { background:rgba(42,95,200,.07); }
+.vs-icon  { font-size:52px; margin-bottom:14px; }
+.vs-label { font-family:var(--font-display); font-size:36px; }
+.vs-desc  { font-family:var(--font-body); font-size:20px; opacity:.65; margin-top:8px; }
+#s3-arrow  { font-size:52px; opacity:0; flex-shrink:0; }
+#s3-insight { opacity:0; transform:translateY(20px); margin-top:24px; width:100%; }
+
+/* S4 */
+#s4-pair { display:flex; gap:36px; margin-top:22px; width:100%; }
+.pair-box { flex:1; padding:28px 32px; border:2px solid var(--ink); box-shadow:6px 6px 0 var(--ink); border-radius:4px; background:var(--white); opacity:0; transform:translateY(24px); }
+.pair-head { font-family:var(--font-display); font-size:38px; margin-bottom:14px; }
+.pair-items { display:flex; flex-direction:column; gap:10px; }
+.pair-items li { font-family:var(--font-body); font-size:21px; list-style:none; padding-left:22px; position:relative; }
+.pair-items li::before { content:'→'; position:absolute; left:0; color:var(--accent1); }
+.pair-box.good .pair-items li::before { color:var(--accent4); }
+#s4-conclusion { opacity:0; transform:translateY(16px); margin-top:20px; width:100%; }
+
+/* S5 */
+#s5-diagram { display:flex; align-items:center; gap:24px; margin-top:28px; width:100%; }
+.s5-node { flex:1; text-align:center; padding:24px 16px; border:2px solid var(--ink); box-shadow:6px 6px 0 var(--ink); background:var(--white); border-radius:4px; opacity:0; transform:scale(.88); }
+.s5-icon  { font-size:48px; margin-bottom:10px; }
+.s5-label { font-family:var(--font-display); font-size:30px; }
+.s5-sub   { font-family:var(--font-body); font-size:17px; opacity:.6; margin-top:4px; }
+.s5-arrow { font-size:36px; flex-shrink:0; opacity:0; color:var(--accent3); }
+.s5-arrow.bad { color:var(--accent1); font-size:22px; text-align:center; }
+#s5-cost { opacity:0; transform:translateY(16px); margin-top:20px; width:100%; }
+#s5-advantage { opacity:0; transform:translateY(16px); margin-top:14px; }
+
+/* S6 */
+#s6-timeline { display:flex; flex-direction:column; gap:0; margin-top:28px; width:80%; }
+.tl-item { display:flex; align-items:stretch; gap:0; opacity:0; transform:translateX(-24px); }
+.tl-dot-col { display:flex; flex-direction:column; align-items:center; width:44px; flex-shrink:0; }
+.tl-dot     { width:16px; height:16px; border-radius:50%; border:3px solid var(--ink); background:var(--white); flex-shrink:0; }
+.tl-dot.active { background:var(--accent3); }
+.tl-line-seg { flex:1; width:3px; background:rgba(26,20,16,.2); }
+.tl-content { padding:0 0 28px 20px; }
+.tl-year { font-family:var(--font-label); font-size:15px; opacity:.4; margin-bottom:5px; }
+.tl-text { font-family:var(--font-body); font-size:var(--size-body); line-height:1.5; }
+#s6-conclusion { opacity:0; margin-top:12px; }
+
+/* S7 */
+#s7-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; margin-top:28px; width:100%; }
+.s7-card { padding:24px 26px; border:2px solid var(--ink); box-shadow:6px 6px 0 var(--ink); background:var(--white); border-radius:4px; opacity:0; transform:translateY(24px); }
+.s7-num   { font-family:var(--font-display); font-size:48px; color:var(--accent3); margin-bottom:6px; }
+.s7-title { font-family:var(--font-display); font-size:28px; margin-bottom:8px; }
+.s7-body  { font-family:var(--font-body); font-size:19px; line-height:1.6; opacity:.8; }
+
+/* S8 */
+#s8-flow { display:flex; align-items:center; gap:0; margin-top:36px; width:100%; }
+.flow-stage  { flex:1; text-align:center; padding:24px 12px; border:2px solid var(--ink); background:var(--white); box-shadow:6px 6px 0 var(--ink); border-radius:4px; opacity:0; transform:translateY(24px); }
+.flow-icon   { font-size:44px; margin-bottom:10px; }
+.flow-label  { font-family:var(--font-display); font-size:34px; }
+.flow-sub    { font-family:var(--font-body); font-size:17px; opacity:.6; margin-top:4px; }
+.flow-arrow  { font-size:36px; flex-shrink:0; color:var(--accent3); opacity:0; padding:0 8px; }
+#s8-insight  { opacity:0; margin-top:24px; }
+
+/* S9 */
+#s9-tools { display:flex; gap:28px; margin-top:24px; width:100%; }
+.tool-block { flex:1; padding:24px 28px; border:2px solid var(--ink); box-shadow:6px 6px 0 var(--ink); background:var(--white); border-radius:4px; opacity:0; transform:translateY(24px); }
+.tool-head  { display:flex; align-items:center; gap:14px; margin-bottom:16px; }
+.tool-icon  { font-size:40px; }
+.tool-name  { font-family:var(--font-display); font-size:34px; }
+.tool-items { display:flex; flex-direction:column; gap:8px; }
+.tool-items li { font-family:var(--font-body); font-size:19px; list-style:none; padding-left:20px; position:relative; line-height:1.5; }
+.tool-items li::before { content:'·'; position:absolute; left:5px; font-size:22px; color:var(--accent2); }
+#s9-questions { margin-top:20px; padding:20px 28px; border:2px dashed rgba(26,20,16,.3); border-radius:4px; opacity:0; transform:translateY(16px); width:100%; }
+.q-row  { display:flex; gap:20px; }
+.q-item { flex:1; }
+.q-tag  { font-family:var(--font-label); font-size:13px; color:var(--accent2); margin-bottom:5px; }
+.q-text { font-family:var(--font-body); font-size:19px; line-height:1.5; }
+
+/* S10 */
+#s10-steps { display:flex; flex-direction:column; gap:16px; margin-top:20px; width:100%; }
+.reflect-step { display:flex; gap:20px; align-items:flex-start; padding:20px 24px; background:var(--white); border:2px solid var(--ink); box-shadow:5px 5px 0 var(--ink); border-radius:4px; opacity:0; transform:translateX(-24px); }
+.reflect-key  { font-family:var(--font-display); font-size:34px; flex-shrink:0; width:130px; color:var(--accent2); }
+.reflect-desc { font-family:var(--font-body); font-size:22px; line-height:1.55; }
+#s10-principle { opacity:0; transform:translateY(16px); margin-top:16px; width:100%; }
+
+/* S11 */
+#s11-split { display:flex; gap:32px; margin-top:24px; width:100%; }
+.s11-half { flex:1; padding:24px 28px; border:2px solid var(--ink); box-shadow:6px 6px 0 var(--ink); background:var(--white); border-radius:4px; opacity:0; transform:translateY(24px); }
+.s11-step { font-family:var(--font-display); font-size:34px; margin-bottom:14px; }
+.s11-items { display:flex; flex-direction:column; gap:9px; }
+.s11-items li { font-family:var(--font-body); font-size:19px; list-style:none; padding-left:20px; position:relative; line-height:1.5; }
+.s11-items li::before { content:'→'; position:absolute; left:0; color:var(--accent3); }
+#s11-conclusion { opacity:0; transform:translateY(16px); margin-top:20px; width:100%; }
+
+/* S12 */
+#s12-chain { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-top:24px; }
+.chain-node  { padding:10px 20px; border:2px solid var(--ink); background:var(--white); box-shadow:4px 4px 0 var(--ink); font-family:var(--font-body); font-size:20px; border-radius:4px; opacity:0; transform:scale(.85); }
+.chain-arrow { font-size:26px; display:flex; align-items:center; opacity:0; color:var(--accent3); }
+#s12-quote   { opacity:0; transform:translateY(20px); margin-top:28px; }
+#s12-finale  { opacity:0; transform:translateY(16px); margin-top:20px; }
+#s12-cta     { opacity:0; transform:translateY(16px); margin-top:16px; }
+</style>
+</head>
+<body>
+<div id="deck" data-w="1920" data-h="1080">
+  <div id="prog-wrap"><div id="prog"></div></div>
+  <span id="slide-num">1 / 12</span>
+
+  <!-- S1 封面 -->
+  <div class="slide current" id="s1">
+    <div id="s1-eyebrow">LLM 时代的知识管理</div>
+    <div id="s1-title">文本是<br>知识的接口</div>
+    <div id="s1-rule"></div>
+    <div id="s1-sub">普通人的知识管理，从来不用追多模态的风口</div>
+    <div id="s1-badge">手绘创意 · 主题1</div>
+  </div>
+
+  <!-- S2 痛点 -->
+  <div class="slide" id="s2">
+    <div class="tag">你是不是也有过这种感受</div>
+    <div class="display" style="margin-bottom:28px;">越学越<span class="accent1">空</span></div>
+    <div id="s2-items">
+      <div class="pain-item" id="s2-p1"><div class="pain-num">01</div><div>刷了一下午知识视频，当时醍醐灌顶，转头就忘得一干二净</div></div>
+      <div class="pain-item" id="s2-p2"><div class="pain-num">02</div><div>收藏夹建了十几个分类，存满了干货，却<strong>再也没打开过</strong></div></div>
+      <div class="pain-item" id="s2-p3"><div class="pain-num">03</div><div>追遍全网最新 AI 学习工具，越用越复杂，越学越焦虑</div></div>
+    </div>
+  </div>
+
+  <!-- S3 核心论点 -->
+  <div class="slide" id="s3">
+    <div class="tag">核心洞见</div>
+    <div class="h1" id="s3-headline">我们从一开始，就搞错了知识的<span class="accent1">载体</span></div>
+    <div id="s3-vs">
+      <div class="vs-box bad" id="s3-bad">
+        <div class="vs-icon">🎬</div>
+        <div class="vs-label">视频 / 音频</div>
+        <div class="vs-desc">传播形式<br>让你快速接收信息</div>
+      </div>
+      <div id="s3-arrow">≠</div>
+      <div class="vs-box good" id="s3-good">
+        <div class="vs-icon">📝</div>
+        <div class="vs-label">文本</div>
+        <div class="vs-desc">交互接口<br>让你内化并迭代认知</div>
+      </div>
+    </div>
+    <div id="s3-insight" class="card card-blue">
+      <div class="h2">文本 = 知识的<span class="accent2">通用接口</span></div>
+      <div class="body" style="margin-top:10px;opacity:.7;">连接 · 互通 · 可二次加工 · 持续产生价值</div>
+    </div>
+  </div>
+
+  <!-- S4 第一层 对话接口 -->
+  <div class="slide" id="s4">
+    <div class="tag">第一层</div>
+    <div class="h1">你和知识的<span class="accent1">对话接口</span></div>
+    <div id="s4-pair">
+      <div class="pair-box" id="s4-bad">
+        <div class="pair-head">🎬 刷视频 / 听播客</div>
+        <ul class="pair-items">
+          <li>被动线性接收，跟着博主节奏走</li>
+          <li>无时间停下来拆解、关联</li>
+          <li>当时懂了，转头就忘</li>
+          <li>只是看完了，从未真正对话</li>
+        </ul>
+      </div>
+      <div class="pair-box good" id="s4-good">
+        <div class="pair-head">📝 读 / 写文本</div>
+        <ul class="pair-items">
+          <li>主动对话，自己掌控节奏</li>
+          <li>可暂停 · 可标注 · 可拆解 · 可重组</li>
+          <li>同样一句话，可以追问边界</li>
+          <li>真正走进知识内部</li>
+        </ul>
+      </div>
+    </div>
+    <div id="s4-conclusion" class="card">
+      <span class="h2">视频让你</span>&nbsp;<span class="h2 accent1">看见</span>&nbsp;<span class="h2">知识，文本让你</span>&nbsp;<span class="h2 accent4">走进</span>&nbsp;<span class="h2">知识</span>
+    </div>
+  </div>
+
+  <!-- S5 第二层 AI接口 -->
+  <div class="slide" id="s5">
+    <div class="tag">第二层</div>
+    <div class="h1">AI 的<span class="accent2">原生接口</span></div>
+    <div id="s5-diagram">
+      <div class="s5-node" id="s5-n1">
+        <div class="s5-icon">🎬</div>
+        <div class="s5-label">视频输入</div>
+        <div class="s5-sub">1小时访谈</div>
+      </div>
+      <div class="s5-arrow bad" id="s5-a1">⚠️<br><small style="font-size:15px;">转译损耗<br>成本×50+</small></div>
+      <div class="s5-node" id="s5-n2">
+        <div class="s5-icon">🔄</div>
+        <div class="s5-label">强制转文本</div>
+        <div class="s5-sub">所有多模态必须做这步</div>
+      </div>
+      <div class="s5-arrow" id="s5-a2">→</div>
+      <div class="s5-node" id="s5-n3">
+        <div class="s5-icon">🤖</div>
+        <div class="s5-label">AI 推理处理</div>
+        <div class="s5-sub">总结 / 提炼 / 重组</div>
+      </div>
+    </div>
+    <div id="s5-cost" class="card card-red">
+      <div class="h2">直接喂文本 = <span class="accent4">直接对接 AI 原生能力</span></div>
+      <div class="body" style="margin-top:8px;opacity:.7;">无损耗 · 全精度 · 低成本 · 总结 / 逻辑推理 / 观点对比 / 体系搭建</div>
+    </div>
+    <div id="s5-advantage" style="margin-top:14px;">
+      <span class="body">文本不是让 AI「看见」内容，而是让 AI 真正</span>&nbsp;<span class="h2 accent2">读懂</span>&nbsp;<span class="body">内容</span>
+    </div>
+  </div>
+
+  <!-- S6 第三层 时间接口 -->
+  <div class="slide" id="s6">
+    <div class="tag">第三层</div>
+    <div class="h1">现在和未来的<span class="accent3">迭代接口</span></div>
+    <div id="s6-timeline">
+      <div class="tl-item" id="s6-t1">
+        <div class="tl-dot-col"><div class="tl-dot"></div><div class="tl-line-seg"></div></div>
+        <div class="tl-content">
+          <div class="tl-year">视频收藏 — 一次性内容</div>
+          <div class="tl-text">一年后：<span class="accent1">视频下架 · 大海捞针 · 记忆归零</span></div>
+        </div>
+      </div>
+      <div class="tl-item" id="s6-t2">
+        <div class="tl-dot-col"><div class="tl-dot active"></div><div class="tl-line-seg"></div></div>
+        <div class="tl-content">
+          <div class="tl-year">文本积累 — 活的知识接口</div>
+          <div class="tl-text">一年后：<span class="accent4">一秒定位 · 补充新认知 · 修正旧观点</span></div>
+        </div>
+      </div>
+      <div class="tl-item" id="s6-t3">
+        <div class="tl-dot-col"><div class="tl-dot active"></div></div>
+        <div class="tl-content">
+          <div class="tl-year">AI 辅助跨期迭代</div>
+          <div class="tl-text">不同时期的同主题文本放一起对比 → <span class="accent2">认知体系持续升级</span></div>
+        </div>
+      </div>
+    </div>
+    <div id="s6-conclusion" class="card card-gold" style="margin-top:16px;display:inline-block;">
+      <div class="h2">文本打通了<span class="accent3">现在的你</span>和<span class="accent3">未来的你</span></div>
+    </div>
+  </div>
+
+  <!-- S7 普通人最优解 -->
+  <div class="slide" id="s7">
+    <div class="tag">为什么是普通人的最优解</div>
+    <div class="h1"><span class="accent5">多模态</span> = 富人方案 &nbsp;·&nbsp; <span class="accent4">文本</span> = 普惠选择</div>
+    <div id="s7-grid">
+      <div class="s7-card" id="s7-c1">
+        <div class="s7-num">01</div>
+        <div class="s7-title">成本鸿沟</div>
+        <div class="s7-body">视频转文本：<strong>免费，成本近零</strong><br>多模态 AI 直接处理：<strong>成本翻几十倍</strong>，还有时长 / 次数限制<br><br>能长期坚持的 = 最稳定、成本最低的</div>
+      </div>
+      <div class="s7-card" id="s7-c2">
+        <div class="s7-num">02</div>
+        <div class="s7-title">隐性知识的抓手</div>
+        <div class="s7-body">没有文本框架，视频里的微表情、言外之意 = <strong>玄学</strong><br><br>文本是<strong>知识导航图</strong>：先搭好显性框架，再带着导航去看视频，才能精准捕捉隐性信息</div>
+      </div>
+      <div class="s7-card" id="s7-c3">
+        <div class="s7-num">03</div>
+        <div class="s7-title">体系化迭代</div>
+        <div class="s7-body">视频：<strong>线性、不可拆分、无法跨内容关联</strong><br>文本：<strong>网状、可编辑、可随时重组</strong><br><br>你的认知地图，只有文本能低成本搭建</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S8 工作流全景 -->
+  <div class="slide" id="s8">
+    <div class="tag">文本驱动 AI 协作工作流</div>
+    <div class="h1">四个阶段，<span class="accent2">文本贯穿全程</span></div>
+    <div id="s8-flow">
+      <div class="flow-stage" id="s8-f1"><div class="flow-icon">📥</div><div class="flow-label">收录</div><div class="flow-sub">信息 → 文本</div></div>
+      <div class="flow-arrow" id="s8-a1">→</div>
+      <div class="flow-stage" id="s8-f2"><div class="flow-icon">🪞</div><div class="flow-label">反思</div><div class="flow-sub">文本 → 认知</div></div>
+      <div class="flow-arrow" id="s8-a2">→</div>
+      <div class="flow-stage" id="s8-f3"><div class="flow-icon">✍️</div><div class="flow-label">输出</div><div class="flow-sub">认知 → 文章</div></div>
+      <div class="flow-arrow" id="s8-a3">→</div>
+      <div class="flow-stage" id="s8-f4"><div class="flow-icon">🎬</div><div class="flow-label">立体化</div><div class="flow-sub">文章 → 视频</div></div>
+    </div>
+    <div id="s8-insight" style="margin-top:24px;">
+      <div class="body" style="opacity:.7;">每一个环节，信息都以<strong>文本</strong>为介质流动——文本是整条链路的通用格式，不是起点也不是终点。</div>
+    </div>
+  </div>
+
+  <!-- S9 阶段1 收录 -->
+  <div class="slide" id="s9">
+    <div class="tag">阶段 1</div>
+    <div class="h1">收录：把信息转化为<span class="accent2">可处理的文本</span></div>
+    <div id="s9-tools">
+      <div class="tool-block" id="s9-t1">
+        <div class="tool-head"><div class="tool-icon">🔗</div><div class="tool-name">ThirdSpace</div></div>
+        <ul class="tool-items">
+          <li>一键收录文章 URL</li>
+          <li>AI 自动生成知识卡片</li>
+          <li>摘要 + 关键要点</li>
+          <li>三个深度思考问题（连接 / 挑战 / 行动）</li>
+        </ul>
+      </div>
+      <div class="tool-block" id="s9-t2">
+        <div class="tool-head"><div class="tool-icon">🎬</div><div class="tool-name">清记 NoteClear</div></div>
+        <ul class="tool-items">
+          <li>支持 B站 / YouTube / 抖音 / 小红书 / 本地文件</li>
+          <li>有字幕视频：几十秒出结构化 Markdown 笔记</li>
+          <li>拿到文字后 → 走同样的知识卡片路径</li>
+          <li>视频和文章，最终统一为同一种格式</li>
+        </ul>
+      </div>
+    </div>
+    <div id="s9-questions">
+      <div class="label" style="margin-bottom:14px;opacity:.5;">三个深度思考问题（非「你怎么看」式废话问题）</div>
+      <div class="q-row">
+        <div class="q-item"><div class="q-tag">连接层</div><div class="q-text">这个知识，和你自己的哪段经历对应？</div></div>
+        <div class="q-item"><div class="q-tag">挑战层</div><div class="q-text">这里面有没有你不同意的地方？</div></div>
+        <div class="q-item"><div class="q-tag">行动层</div><div class="q-text">如果只能改变一件事，你会改变什么？</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S10 阶段2 反思 -->
+  <div class="slide" id="s10">
+    <div class="tag">阶段 2</div>
+    <div class="h1">反思：让知识真正<span class="accent5">进入你的认知</span></div>
+    <div id="s10-steps">
+      <div class="reflect-step" id="s10-s1">
+        <div class="reflect-key">Mirror</div>
+        <div class="reflect-desc">把你分散的思考回答，提炼成一个<strong>核心认知主题</strong></div>
+      </div>
+      <div class="reflect-step" id="s10-s2">
+        <div class="reflect-key">Deepen</div>
+        <div class="reflect-desc">再给三个更深的问题——<strong>行为层 · 情绪层 · 创造层</strong></div>
+      </div>
+      <div class="reflect-step" id="s10-s3">
+        <div class="reflect-key">Bridge</div>
+        <div class="reflect-desc">洞察 → 具体行动建议 → <strong>自动写入待办清单 + 附原始链接</strong></div>
+      </div>
+    </div>
+    <div id="s10-principle" class="card card-red">
+      <div class="h2">核心设计：没有被执行验证的行动，<span class="accent1">不算真正的闭环</span></div>
+    </div>
+  </div>
+
+  <!-- S11 阶段3+4 -->
+  <div class="slide" id="s11">
+    <div class="tag">阶段 3 + 4</div>
+    <div class="h1">输出 + 立体化：<span class="accent3">同一套认知，两种感官传递</span></div>
+    <div id="s11-split">
+      <div class="s11-half" id="s11-h1">
+        <div class="s11-step">✍️ 阶段 3：输出文章</div>
+        <ul class="s11-items">
+          <li>知识库已积累大量文本素材</li>
+          <li>AI 扫描主题，提炼重组草稿</li>
+          <li>你的工作：审阅 / 修改 / 补充真实经历</li>
+          <li>文章骨架从积累里长出来，不是强行拼凑</li>
+        </ul>
+      </div>
+      <div class="s11-half" id="s11-h2">
+        <div class="s11-step">🎬 阶段 4：立体化为视频</div>
+        <ul class="s11-items">
+          <li>同一篇文章 → 两个互补维度</li>
+          <li>口播稿：听觉 × 情感节奏（为「说」优化）</li>
+          <li>教学动画：视觉 × 结构关系（以原文为内容源）</li>
+          <li>提词器与动画通过 BroadcastChannel 自动联动</li>
+        </ul>
+      </div>
+    </div>
+    <div id="s11-conclusion" class="card card-gold">
+      <div class="h2">这不是一篇文章变成两个内容，而是<span class="accent3">同一套认知，用两种感官同时传递</span></div>
+    </div>
+  </div>
+
+  <!-- S12 金句收尾 -->
+  <div class="slide" id="s12">
+    <div class="tag">文本这道门</div>
+    <div id="s12-chain">
+      <div class="chain-node" id="s12-cn1">视频</div>
+      <div class="chain-arrow" id="s12-ca1">→</div>
+      <div class="chain-node" id="s12-cn2">文本</div>
+      <div class="chain-arrow" id="s12-ca2">→</div>
+      <div class="chain-node" id="s12-cn3">知识卡片</div>
+      <div class="chain-arrow" id="s12-ca3">→</div>
+      <div class="chain-node" id="s12-cn4">反思笔记</div>
+      <div class="chain-arrow" id="s12-ca4">→</div>
+      <div class="chain-node" id="s12-cn5">文章</div>
+      <div class="chain-arrow" id="s12-ca5">→</div>
+      <div class="chain-node" id="s12-cn6">口播 + 动画</div>
+    </div>
+    <div id="s12-quote" style="margin-top:28px;padding:24px 36px;border-left:6px solid var(--accent3);background:var(--white);">
+      <div class="h2" style="font-style:italic;opacity:.85;">「我的语言的界限，就是我的世界的界限。」</div>
+      <div class="label" style="margin-top:10px;opacity:.4;">— 维特根斯坦</div>
+    </div>
+    <div id="s12-finale" style="margin-top:20px;">
+      <div class="h1">让所有的知识，都经过文本<span class="accent2">这道门</span></div>
+    </div>
+    <div id="s12-cta" class="card card-green" style="margin-top:16px;display:inline-block;">
+      <div class="body">下次看完触动你的视频，不要只是收藏——<strong>用自己的话，把那个触动你的点写下来。</strong></div>
+    </div>
+  </div>
+
+</div>
+
+<script src="../vendor/gsap.min.js"></script>
+<script>
+const TOTAL = 12;
+let cur = 0;
+let stepIdx = 0;
+
+const slideSteps = {
+  1: [
+    () => gsap.to(['#s2-p1','#s2-p2','#s2-p3'], { opacity:1, x:0, duration:.5, stagger:.2, ease:'back.out(1.4)' })
+  ],
+  2: [
+    () => { gsap.to(['#s3-bad','#s3-good'], { opacity:1, scale:1, duration:.5, stagger:.2, ease:'back.out(1.4)' }); gsap.to('#s3-arrow', { opacity:1, duration:.4, delay:.4 }); },
+    () => gsap.to('#s3-insight', { opacity:1, y:0, duration:.5, ease:'back.out(1.2)' })
+  ],
+  3: [
+    () => gsap.to('#s4-bad',  { opacity:1, y:0, duration:.5, ease:'back.out(1.4)' }),
+    () => gsap.to('#s4-good', { opacity:1, y:0, duration:.5, ease:'back.out(1.4)' }),
+    () => gsap.to('#s4-conclusion', { opacity:1, y:0, duration:.5, ease:'power2.out' })
+  ],
+  4: [
+    () => gsap.to(['#s5-n1','#s5-a1','#s5-n2'], { opacity:1, scale:1, duration:.5, stagger:.18, ease:'back.out(1.4)' }),
+    () => { gsap.to(['#s5-a2','#s5-n3'], { opacity:1, scale:1, duration:.5, stagger:.18, ease:'back.out(1.4)' }); gsap.to('#s5-cost', { opacity:1, y:0, duration:.5, delay:.25 }); },
+    () => gsap.to('#s5-advantage', { opacity:1, y:0, duration:.5, ease:'power2.out' })
+  ],
+  5: [
+    () => gsap.to('#s6-t1', { opacity:1, x:0, duration:.5, ease:'back.out(1.2)' }),
+    () => gsap.to('#s6-t2', { opacity:1, x:0, duration:.5, ease:'back.out(1.2)' }),
+    () => { gsap.to('#s6-t3', { opacity:1, x:0, duration:.5, ease:'back.out(1.2)' }); gsap.to('#s6-conclusion', { opacity:1, duration:.5, delay:.3 }); }
+  ],
+  6: [
+    () => gsap.to('#s7-c1', { opacity:1, y:0, duration:.5, ease:'back.out(1.4)' }),
+    () => gsap.to('#s7-c2', { opacity:1, y:0, duration:.5, ease:'back.out(1.4)' }),
+    () => gsap.to('#s7-c3', { opacity:1, y:0, duration:.5, ease:'back.out(1.4)' })
+  ],
+  7: [
+    () => gsap.to(['#s8-f1','#s8-a1','#s8-f2'], { opacity:1, y:0, duration:.5, stagger:.15, ease:'back.out(1.4)' }),
+    () => { gsap.to(['#s8-a2','#s8-f3','#s8-a3','#s8-f4'], { opacity:1, y:0, duration:.5, stagger:.12, ease:'back.out(1.4)' }); gsap.to('#s8-insight', { opacity:1, duration:.5, delay:.5 }); }
+  ],
+  8: [
+    () => gsap.to('#s9-t1', { opacity:1, y:0, duration:.5, ease:'back.out(1.4)' }),
+    () => gsap.to('#s9-t2', { opacity:1, y:0, duration:.5, ease:'back.out(1.4)' }),
+    () => gsap.to('#s9-questions', { opacity:1, y:0, duration:.5, ease:'power2.out' })
+  ],
+  9: [
+    () => gsap.to('#s10-s1', { opacity:1, x:0, duration:.5, ease:'back.out(1.2)' }),
+    () => gsap.to(['#s10-s2','#s10-s3'], { opacity:1, x:0, duration:.5, stagger:.2, ease:'back.out(1.2)' }),
+    () => gsap.to('#s10-principle', { opacity:1, y:0, duration:.5, ease:'power2.out' })
+  ],
+  10: [
+    () => gsap.to('#s11-h1', { opacity:1, y:0, duration:.5, ease:'back.out(1.4)' }),
+    () => gsap.to('#s11-h2', { opacity:1, y:0, duration:.5, ease:'back.out(1.4)' }),
+    () => gsap.to('#s11-conclusion', { opacity:1, y:0, duration:.5, ease:'power2.out' })
+  ],
+  11: [
+    () => {
+      const nodes = ['#s12-cn1','#s12-ca1','#s12-cn2','#s12-ca2','#s12-cn3','#s12-ca3','#s12-cn4','#s12-ca4','#s12-cn5','#s12-ca5','#s12-cn6'];
+      gsap.to(nodes, { opacity:1, scale:1, duration:.35, stagger:.07, ease:'back.out(1.4)' });
+    },
+    () => gsap.to('#s12-quote',  { opacity:1, y:0, duration:.6, ease:'power2.out' }),
+    () => gsap.to('#s12-finale', { opacity:1, y:0, duration:.5, ease:'back.out(1.2)' }),
+    () => gsap.to('#s12-cta',    { opacity:1, y:0, duration:.5, ease:'back.out(1.2)' })
+  ]
+};
+
+function resetSlide(n) {
+  gsap.killTweensOf('*');
+  switch(n) {
+    case 0:
+      gsap.set(['#s1-eyebrow','#s1-title','#s1-sub','#s1-badge'], { autoAlpha:0, y:20 });
+      gsap.set('#s1-rule', { width:0 });
+      break;
+    case 1:
+      gsap.set(['#s2-p1','#s2-p2','#s2-p3'], { opacity:0, x:-30 });
+      break;
+    case 2:
+      gsap.set(['#s3-bad','#s3-good'], { opacity:0, scale:.92 });
+      gsap.set(['#s3-arrow','#s3-insight'], { opacity:0 });
+      gsap.set('#s3-insight', { y:20 });
+      break;
+    case 3:
+      gsap.set(['#s4-bad','#s4-good','#s4-conclusion'], { opacity:0, y:24 });
+      break;
+    case 4:
+      gsap.set(['#s5-n1','#s5-a1','#s5-n2','#s5-a2','#s5-n3'], { opacity:0, scale:.88 });
+      gsap.set(['#s5-cost','#s5-advantage'], { opacity:0, y:16 });
+      break;
+    case 5:
+      gsap.set(['#s6-t1','#s6-t2','#s6-t3'], { opacity:0, x:-24 });
+      gsap.set('#s6-conclusion', { opacity:0 });
+      break;
+    case 6:
+      gsap.set(['#s7-c1','#s7-c2','#s7-c3'], { opacity:0, y:24 });
+      break;
+    case 7:
+      gsap.set(['#s8-f1','#s8-a1','#s8-f2','#s8-a2','#s8-f3','#s8-a3','#s8-f4'], { opacity:0, y:24 });
+      gsap.set('#s8-insight', { opacity:0 });
+      break;
+    case 8:
+      gsap.set(['#s9-t1','#s9-t2'], { opacity:0, y:24 });
+      gsap.set('#s9-questions', { opacity:0, y:16 });
+      break;
+    case 9:
+      gsap.set(['#s10-s1','#s10-s2','#s10-s3'], { opacity:0, x:-24 });
+      gsap.set('#s10-principle', { opacity:0, y:16 });
+      break;
+    case 10:
+      gsap.set(['#s11-h1','#s11-h2','#s11-conclusion'], { opacity:0, y:24 });
+      break;
+    case 11:
+      const chain = ['#s12-cn1','#s12-ca1','#s12-cn2','#s12-ca2','#s12-cn3','#s12-ca3','#s12-cn4','#s12-ca4','#s12-cn5','#s12-ca5','#s12-cn6'];
+      gsap.set(chain, { opacity:0, scale:.85 });
+      gsap.set(['#s12-quote','#s12-finale','#s12-cta'], { opacity:0, y:20 });
+      break;
+  }
+}
+
+function initStep(n) { stepIdx = 0; }
+
+function showSlide(n) {
+  document.querySelectorAll('.slide').forEach(s => s.classList.remove('current'));
+  document.getElementById('s' + (n+1)).classList.add('current');
+  cur = n;
+  resetSlide(n);
+  initStep(n);
+  broadcastSlide(n);
+  document.getElementById('slide-num').textContent = (n+1) + ' / ' + TOTAL;
+  document.getElementById('prog').style.width = ((n+1)/TOTAL*100) + '%';
+  setTimeout(() => handleAdvance(), 80);
+}
+
+function handleAdvance() {
+  const steps = slideSteps[cur];
+  if (steps && stepIdx < steps.length) {
+    steps[stepIdx](); stepIdx++;
+  } else if (cur < TOTAL - 1) {
+    showSlide(cur + 1);
+  }
+}
+
+// S1 entrance
+(function s1Entrance() {
+  resetSlide(0);
+  const tl = gsap.timeline({ delay:.1 });
+  tl.to('#s1-eyebrow', { autoAlpha:1, y:0, duration:.5, ease:'power2.out' })
+    .to('#s1-title',   { autoAlpha:1, y:0, duration:.65, ease:'back.out(1.2)' }, '-=.2')
+    .to('#s1-rule',    { width:320, duration:.65, ease:'power2.out' }, '-=.3')
+    .to('#s1-sub',     { autoAlpha:1, y:0, duration:.5, ease:'power2.out' }, '-=.2')
+    .to('#s1-badge',   { autoAlpha:1, y:0, duration:.4, ease:'back.out(1.4)' }, '-=.1');
+})();
+
+document.addEventListener('click', handleAdvance);
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); handleAdvance(); }
+  if (e.key === 'ArrowLeft')  { e.preventDefault(); if (cur > 0) showSlide(cur - 1); }
+  if (e.key === 'f') document.documentElement.requestFullscreen?.();
+});
+
+function scaleCanvas() {
+  const deck = document.getElementById('deck');
+  const W = 1920, H = 1080;
+  const scale = Math.min(window.innerWidth/W, window.innerHeight/H);
+  deck.style.cssText = `width:${W}px;height:${H}px;transform:scale(${scale});transform-origin:top left;margin-left:${(window.innerWidth-W*scale)/2}px;margin-top:${(window.innerHeight-H*scale)/2}px;`;
+}
+window.addEventListener('resize', scaleCanvas);
+scaleCanvas();
+
+/* ── 提词器联动 ── */
+(function() {
+  let _bc = null, _scriptText = null, _started = false;
+  const SCRIPT_URL = window.location.origin + '/works/01-text-is-interface/script.md';
+  const fetchScript = async () => {
+    if (_scriptText) return _scriptText;
+    try { const r = await fetch(SCRIPT_URL); if (r.ok) _scriptText = await r.text(); } catch(e) {}
+    return _scriptText;
+  };
+  fetchScript();
+  try {
+    _bc = new BroadcastChannel('slide-sync');
+    _bc.postMessage({ type:'reset' });
+    setInterval(() => _bc && _bc.postMessage({ type:'heartbeat' }), 2000);
+    _bc.onmessage = async e => {
+      if ((e.data||{}).type === 'request-script') {
+        const text = await fetchScript();
+        if (text) _bc.postMessage({ type:'load-script', text, name:'script.md', slide:cur, scriptUrl:SCRIPT_URL });
+      }
+    };
+  } catch(e) {}
+  function broadcastSlide(n) { try { _bc && _bc.postMessage({ type:'slide-change', slide:n }); } catch(e) {} }
+  window.broadcastSlide = broadcastSlide;
+  const _orig = handleAdvance;
+  const _wrapped = function() {
+    if (!_started) { _started = true; broadcastSlide(cur); }
+    _orig();
+  };
+  document.removeEventListener('click', handleAdvance);
+  document.addEventListener('click', _wrapped);
+  window.handleAdvance = _wrapped;
+})();
+</script>
+</body>
+</html>

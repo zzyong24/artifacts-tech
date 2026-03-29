@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>用 AI 搭内容系统</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+<script src="../vendor/gsap.min.js"></script>
+<style>
+/* ── 主题 4：深色极简 ── */
+:root {
+  --bg:      #0f0f0f;
+  --ink:     #ededed;
+  --accent1: #a3e635;
+  --accent2: #38bdf8;
+  --accent3: #f472b6;
+  --accent4: #fbbf24;
+  --dim:     rgba(237,237,237,.4);
+  --card:    #1a1a1a;
+  --card-border: 1px solid rgba(237,237,237,.08);
+  --font-display: 'Inter', sans-serif;
+  --font-label:   'Fira Code', monospace;
+  --size-hero:    96px;
+  --size-h1:      52px;
+  --size-h2:      34px;
+  --size-body:    24px;
+  --size-label:   17px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100%; height: 100%;
+  background: #000;
+  overflow: hidden;
+  font-family: var(--font-display);
+  color: var(--ink);
+}
+
+#deck {
+  position: absolute;
+  background: var(--bg);
+  background-image: radial-gradient(rgba(163,230,53,.04) 1px, transparent 1px);
+  background-size: 32px 32px;
+  overflow: hidden;
+}
+
+/* ── 进度条 ── */
+#prog-wrap {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 3px; background: rgba(237,237,237,.06); z-index: 100;
+}
+#prog { height: 100%; background: var(--accent1); width: 0; transition: width .4s ease; }
+
+/* ── Slide 编号 ── */
+#slide-num {
+  position: absolute; bottom: 20px; right: 36px;
+  font-family: var(--font-label); font-size: var(--size-label);
+  color: var(--dim); z-index: 100;
+}
+
+/* ── Slide 基础 ── */
+.slide {
+  position: absolute; inset: 0;
+  display: none;
+  align-items: center; justify-content: center;
+  padding: 72px 96px;
+}
+.slide.current { display: flex; }
+
+/* ── S1：开场 ── */
+#s1 { flex-direction: column; align-items: flex-start; justify-content: center; gap: 0; }
+
+#s1-time {
+  font-family: var(--font-label);
+  font-size: 120px;
+  font-weight: 900;
+  color: var(--accent1);
+  line-height: 1;
+  letter-spacing: -4px;
+  text-shadow: 0 0 60px rgba(163,230,53,.3);
+}
+
+#s1-tag {
+  font-family: var(--font-label);
+  font-size: var(--size-label);
+  color: var(--accent1);
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  margin-bottom: 28px;
+}
+
+#s1-t1 {
+  font-size: var(--size-h1);
+  font-weight: 900;
+  line-height: 1.2;
+  margin-top: 24px;
+  max-width: 820px;
+}
+
+#s1-t2 {
+  font-size: var(--size-body);
+  color: var(--dim);
+  margin-top: 16px;
+  max-width: 640px;
+  line-height: 1.6;
+}
+
+#s1-cursor {
+  display: inline-block;
+  width: 3px;
+  height: 1.1em;
+  background: var(--accent1);
+  margin-left: 4px;
+  vertical-align: text-bottom;
+  animation: blinkCursor .7s infinite;
+}
+@keyframes blinkCursor { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* ── S2：大多数人 ── */
+#s2 { flex-direction: column; align-items: center; justify-content: center; gap: 48px; }
+
+#s2-title {
+  font-size: var(--size-h1);
+  font-weight: 900;
+  text-align: center;
+}
+
+.s2-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 28px 36px;
+  background: var(--card);
+  border: var(--card-border);
+  border-radius: 8px;
+  width: 680px;
+}
+.s2-card .card-icon { font-size: 36px; flex-shrink: 0; }
+.s2-card .card-text { font-size: var(--size-body); line-height: 1.5; }
+.s2-card .card-text strong { color: var(--accent4); }
+
+#s2-dead {
+  font-size: var(--size-h2);
+  font-weight: 900;
+  color: var(--accent3);
+  text-align: center;
+  letter-spacing: .02em;
+}
+
+/* ── S3：核心洞见 ── */
+#s3 { flex-direction: column; align-items: center; justify-content: center; gap: 0; }
+
+#s3-tag {
+  font-family: var(--font-label);
+  font-size: var(--size-label);
+  color: var(--dim);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  margin-bottom: 48px;
+}
+
+.flip-pair {
+  display: flex;
+  align-items: center;
+  gap: 48px;
+}
+
+.flip-box {
+  width: 360px;
+  padding: 48px 44px;
+  background: var(--card);
+  border: 1px solid rgba(237,237,237,.12);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.flip-box .fb-label {
+  font-family: var(--font-label);
+  font-size: 14px;
+  color: var(--dim);
+  letter-spacing: .1em;
+}
+.flip-box .fb-main {
+  font-size: var(--size-h2);
+  font-weight: 900;
+  line-height: 1.3;
+}
+
+#s3-box-a .fb-main { color: var(--dim); text-decoration: line-through; }
+#s3-box-b { border-color: var(--accent1); box-shadow: 0 0 0 1px var(--accent1), 0 0 40px rgba(163,230,53,.1); }
+#s3-box-b .fb-main { color: var(--accent1); }
+
+#s3-arrow {
+  font-size: 48px;
+  color: var(--accent1);
+  text-shadow: 0 0 20px rgba(163,230,53,.5);
+}
+
+#s3-sub {
+  margin-top: 48px;
+  font-size: var(--size-body);
+  color: var(--dim);
+  text-align: center;
+  max-width: 600px;
+  line-height: 1.7;
+}
+
+/* ── S4：系统展示 ── */
+#s4 { flex-direction: column; align-items: flex-start; justify-content: center; gap: 0; }
+
+#s4-title {
+  font-size: var(--size-h1);
+  font-weight: 900;
+  margin-bottom: 52px;
+}
+
+.tool-row {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 24px;
+}
+
+.tool-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px 32px;
+  background: var(--card);
+  border: var(--card-border);
+  border-radius: 8px;
+  width: 720px;
+}
+.tool-card .tc-cmd {
+  font-family: var(--font-label);
+  font-size: 20px;
+  color: var(--accent1);
+  flex-shrink: 0;
+  width: 160px;
+}
+.tool-card .tc-desc {
+  font-size: 20px;
+  color: var(--dim);
+  line-height: 1.4;
+}
+.tool-card .tc-desc strong { color: var(--ink); }
+
+.tool-conn {
+  width: 3px;
+  height: 24px;
+  background: rgba(163,230,53,.2);
+  margin-left: 80px;
+}
+
+#s4-insight {
+  margin-top: 36px;
+  padding: 24px 32px;
+  border-left: 3px solid var(--accent1);
+  font-size: var(--size-body);
+  color: var(--ink);
+  max-width: 720px;
+  line-height: 1.6;
+}
+#s4-insight span { color: var(--accent1); font-weight: 700; }
+
+/* ── S5：知识闭环 ── */
+#s5 { flex-direction: column; align-items: center; justify-content: center; gap: 0; }
+
+#s5-title {
+  font-size: var(--size-h1);
+  font-weight: 900;
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.loop-stage {
+  position: relative;
+  width: 640px;
+  height: 320px;
+}
+
+.loop-node {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 160px;
+  height: 160px;
+  background: var(--card);
+  border: 1px solid rgba(237,237,237,.12);
+  border-radius: 12px;
+}
+.loop-node .ln-icon { font-size: 40px; }
+.loop-node .ln-text { font-size: 17px; font-weight: 700; text-align: center; line-height: 1.3; }
+
+#ln-book  { top: 0; left: 0; }
+#ln-tool  { top: 0; right: 0; }
+#ln-video { bottom: 0; left: 50%; transform: translateX(-50%); }
+
+.loop-node.active {
+  border-color: var(--accent1);
+  box-shadow: 0 0 0 1px var(--accent1), 0 0 24px rgba(163,230,53,.15);
+}
+.loop-node.active .ln-text { color: var(--accent1); }
+
+#s5-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+#s5-tagline {
+  margin-top: 40px;
+  font-size: var(--size-h2);
+  font-weight: 900;
+  text-align: center;
+  color: var(--accent1);
+  text-shadow: 0 0 40px rgba(163,230,53,.3);
+}
+
+/* ── S6：直接开口 ── */
+#s6 { flex-direction: column; align-items: center; justify-content: center; gap: 0; }
+
+#s6-q {
+  font-size: 80px;
+  font-weight: 900;
+  text-align: center;
+  line-height: 1.15;
+  max-width: 900px;
+}
+
+#s6-rule {
+  width: 0;
+  height: 3px;
+  background: var(--accent3);
+  margin: 36px auto;
+  box-shadow: 0 0 12px rgba(244,114,182,.5);
+}
+
+#s6-sub {
+  font-size: var(--size-h2);
+  font-weight: 700;
+  color: var(--accent3);
+  text-align: center;
+  text-shadow: 0 0 30px rgba(244,114,182,.3);
+}
+
+#s6-small {
+  margin-top: 24px;
+  font-size: var(--size-body);
+  color: var(--dim);
+  text-align: center;
+  max-width: 680px;
+  line-height: 1.6;
+}
+
+/* ── S7：CTA ── */
+#s7 { flex-direction: column; align-items: flex-start; justify-content: center; gap: 0; }
+
+#s7-tag {
+  font-family: var(--font-label);
+  font-size: var(--size-label);
+  color: var(--dim);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  margin-bottom: 40px;
+}
+
+#s7-title {
+  font-size: var(--size-h1);
+  font-weight: 900;
+  line-height: 1.2;
+  max-width: 880px;
+  margin-bottom: 52px;
+}
+
+.stat-row {
+  display: flex;
+  gap: 48px;
+  margin-bottom: 48px;
+}
+.stat-item { display: flex; flex-direction: column; gap: 6px; }
+.stat-num {
+  font-family: var(--font-label);
+  font-size: 56px;
+  font-weight: 700;
+  color: var(--accent1);
+  line-height: 1;
+  text-shadow: 0 0 30px rgba(163,230,53,.2);
+}
+.stat-label { font-size: var(--size-label); color: var(--dim); }
+
+#s7-cta {
+  font-size: var(--size-h2);
+  font-weight: 900;
+  color: var(--ink);
+  line-height: 1.4;
+  max-width: 720px;
+  padding-left: 24px;
+  border-left: 3px solid var(--accent1);
+}
+#s7-cta em { color: var(--accent1); font-style: normal; }
+</style>
+</head>
+<body>
+
+<div id="deck" data-w="1920" data-h="1080">
+
+  <!-- ── Slide 1：开场 ── -->
+  <div class="slide" id="s1">
+    <div id="s1-tag">TONIGHT · 凌晨</div>
+    <div id="s1-time">02:30</div>
+    <div id="s1-t1">我还没睡<span id="s1-cursor"></span></div>
+    <div id="s1-t2">不是失眠，是一个 bug 修着修着，停不下来了。<br>这期视频，就是今晚干了什么。</div>
+  </div>
+
+  <!-- ── Slide 2：大多数人 ── -->
+  <div class="slide" id="s2">
+    <div id="s2-title">大多数人写完文章<br>就放着了</div>
+    <div class="s2-card" id="s2-c1">
+      <div class="card-icon">📝</div>
+      <div class="card-text">写了笔记、读了书、有了想法——<br>然后呢？发个朋友圈，<strong>没人看</strong>，就过去了。</div>
+    </div>
+    <div class="s2-card" id="s2-c2">
+      <div class="card-icon">🎬</div>
+      <div class="card-text">做视频门槛太高。要动画、要口播、要提词器。<br>大多数人选择放弃，或者一直「<strong>准备好再发</strong>」。</div>
+    </div>
+    <div id="s2-dead">永远准备好的那天，不会来。</div>
+  </div>
+
+  <!-- ── Slide 3：核心洞见 ── -->
+  <div class="slide" id="s3">
+    <div id="s3-tag">反直觉 · Counter-Intuitive</div>
+    <div class="flip-pair">
+      <div class="flip-box" id="s3-box-a">
+        <div class="fb-label">你以为 AI 是用来…</div>
+        <div class="fb-main">帮你写内容</div>
+      </div>
+      <div id="s3-arrow">→</div>
+      <div class="flip-box" id="s3-box-b">
+        <div class="fb-label">其实 AI 最大的价值是…</div>
+        <div class="fb-main">帮你把系统搭起来</div>
+      </div>
+    </div>
+    <div id="s3-sub">从下午到凌晨两点多——修了 4 个 bug、3 个作品、一套工具链、一个写进 AI 的方法论。<br>这是以前<strong style="color:var(--ink)">一个人根本做不到的事</strong>。</div>
+  </div>
+
+  <!-- ── Slide 4：系统展示 ── -->
+  <div class="slide" id="s4">
+    <div id="s4-title">这套系统，长这样</div>
+    <div class="tool-row">
+      <div class="tool-card" id="s4-t1">
+        <div class="tc-cmd">/gen-script</div>
+        <div class="tc-desc">输入一个主题 → <strong>完整口播稿</strong>，自动 SUCCESs 六维校验</div>
+      </div>
+    </div>
+    <div class="tool-conn" id="s4-conn1"></div>
+    <div class="tool-row">
+      <div class="tool-card" id="s4-t2">
+        <div class="tc-cmd">/gen-slides</div>
+        <div class="tc-desc">口播稿进去 → <strong>教学动画</strong>出来，每步对应口播节奏</div>
+      </div>
+    </div>
+    <div class="tool-conn" id="s4-conn2"></div>
+    <div class="tool-row">
+      <div class="tool-card" id="s4-t3">
+        <div class="tc-cmd">提词器</div>
+        <div class="tc-desc">幻灯片实时同步，点一下自动滚，<strong>不用低头</strong></div>
+      </div>
+    </div>
+    <div id="s4-insight">
+      最关键的是——每次发现问题，修法写进规范。<br>
+      <span>系统在变聪明。</span>下次不会再犯同样的错误。
+    </div>
+  </div>
+
+  <!-- ── Slide 5：知识闭环 ── -->
+  <div class="slide" id="s5">
+    <div id="s5-title">知识闭环</div>
+    <div class="loop-stage" id="s5-loop">
+      <svg id="s5-svg" viewBox="0 0 640 320">
+        <!-- 箭头：book → tool -->
+        <path id="s5-arc1" d="M 160,80 Q 320,-40 480,80"
+          fill="none" stroke="var(--accent1)" stroke-width="2" stroke-dasharray="6,4"
+          marker-end="url(#arr)"/>
+        <!-- 箭头：tool → video -->
+        <path id="s5-arc2" d="M 480,160 Q 560,260 380,280"
+          fill="none" stroke="var(--accent1)" stroke-width="2" stroke-dasharray="6,4"
+          marker-end="url(#arr)"/>
+        <!-- 箭头：video → book -->
+        <path id="s5-arc3" d="M 260,280 Q 80,260 80,160"
+          fill="none" stroke="var(--accent1)" stroke-width="2" stroke-dasharray="6,4"
+          marker-end="url(#arr)"/>
+        <defs>
+          <marker id="arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="var(--accent1)" opacity=".8"/>
+          </marker>
+        </defs>
+      </svg>
+      <div class="loop-node" id="ln-book">
+        <div class="ln-icon">📖</div>
+        <div class="ln-text">读《让创意<br>更有黏性》</div>
+      </div>
+      <div class="loop-node" id="ln-tool">
+        <div class="ln-icon">⚙️</div>
+        <div class="ln-text">方法论写进<br>生成工具</div>
+      </div>
+      <div class="loop-node" id="ln-video">
+        <div class="ln-icon">🎬</div>
+        <div class="ln-text">用工具<br>做出视频</div>
+      </div>
+    </div>
+    <div id="s5-tagline">内容即方法，方法即工具。</div>
+  </div>
+
+  <!-- ── Slide 6：直接开口 ── -->
+  <div class="slide" id="s6">
+    <div id="s6-q">凌晨两点多，AI 说：<br>去睡吧。</div>
+    <div id="s6-rule"></div>
+    <div id="s6-sub">我没听。</div>
+    <div id="s6-small">我把第三期视频录完了。不完美，但发出去了。<br>
+    你以为在等完美，其实是在等死。<br>
+    <strong style="color:var(--ink)">不管好不好，先开口。</strong></div>
+  </div>
+
+  <!-- ── Slide 7：CTA ── -->
+  <div class="slide" id="s7">
+    <div id="s7-tag">TODAY · 今晚</div>
+    <div id="s7-title">一个人 + 一个 AI，<br>一晚上能做到的事</div>
+    <div class="stat-row">
+      <div class="stat-item">
+        <div class="stat-num" id="s7-n1">0</div>
+        <div class="stat-label">文件改动</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num" id="s7-n2">0</div>
+        <div class="stat-label">期作品</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num" id="s7-n3">0</div>
+        <div class="stat-label">个 bug 修复</div>
+      </div>
+    </div>
+    <div id="s7-cta">
+      你需要的不是完美的准备，<br>
+      是一套<em>系统</em>，然后开始<em>第一次</em>。
+    </div>
+  </div>
+
+  <div id="prog-wrap"><div id="prog"></div></div>
+  <div id="slide-num">1 / 7</div>
+</div>
+
+<script>
+/* ── 核心状态 ── */
+const TOTAL = 7;
+let cur = 1;
+const stepIdx = {};
+
+// broadcastSlide 占位（由提词器联动代码覆盖）
+function broadcastSlide(n) {
+  if (window._broadcastSlide) window._broadcastSlide(n);
+}
+
+function initStep(n) { stepIdx[n] = 0; }
+
+function resetSlide(n) {
+  gsap.killTweensOf('*');
+  switch(n) {
+    case 1:
+      gsap.set(['#s1-tag','#s1-time','#s1-t1','#s1-t2'], { autoAlpha: 0, y: 30 });
+      break;
+    case 2:
+      gsap.set(['#s2-title','#s2-c1','#s2-c2','#s2-dead'], { autoAlpha: 0, y: 24 });
+      break;
+    case 3:
+      gsap.set(['#s3-tag','#s3-box-a','#s3-arrow','#s3-box-b','#s3-sub'], { autoAlpha: 0, y: 20 });
+      break;
+    case 4:
+      gsap.set(['#s4-title','#s4-t1','#s4-conn1','#s4-t2','#s4-conn2','#s4-t3','#s4-insight'], { autoAlpha: 0, y: 20 });
+      break;
+    case 5:
+      gsap.set(['#s5-title','#ln-book','#ln-tool','#ln-video','#s5-tagline'], { autoAlpha: 0, y: 20 });
+      gsap.set(['#s5-arc1','#s5-arc2','#s5-arc3'], { autoAlpha: 0 });
+      document.querySelectorAll('.loop-node').forEach(n => n.classList.remove('active'));
+      break;
+    case 6:
+      gsap.set(['#s6-q','#s6-sub','#s6-small'], { autoAlpha: 0, y: 20 });
+      gsap.set('#s6-rule', { width: 0 });
+      break;
+    case 7:
+      gsap.set(['#s7-tag','#s7-title','.stat-row','#s7-cta'], { autoAlpha: 0, y: 20 });
+      document.getElementById('s7-n1').textContent = '0';
+      document.getElementById('s7-n2').textContent = '0';
+      document.getElementById('s7-n3').textContent = '0';
+      break;
+  }
+}
+
+/* ── 每步动画 ── */
+const slideSteps = {
+  1: [
+    () => {
+      gsap.to('#s1-tag', { autoAlpha: 1, y: 0, duration: .5 });
+      gsap.to('#s1-time', { autoAlpha: 1, y: 0, duration: .8, delay: .2, ease: 'back.out(1.2)' });
+    },
+    () => {
+      gsap.to('#s1-t1', { autoAlpha: 1, y: 0, duration: .6 });
+    },
+    () => {
+      gsap.to('#s1-t2', { autoAlpha: 1, y: 0, duration: .6 });
+    },
+  ],
+  2: [
+    () => gsap.to('#s2-title', { autoAlpha: 1, y: 0, duration: .7 }),
+    () => gsap.to('#s2-c1',    { autoAlpha: 1, y: 0, duration: .6 }),
+    () => gsap.to('#s2-c2',    { autoAlpha: 1, y: 0, duration: .6 }),
+    () => gsap.to('#s2-dead',  { autoAlpha: 1, y: 0, duration: .7, ease: 'back.out(1.4)' }),
+  ],
+  3: [
+    () => gsap.to('#s3-tag',   { autoAlpha: 1, y: 0, duration: .5 }),
+    () => {
+      gsap.to('#s3-box-a', { autoAlpha: 1, y: 0, duration: .6 });
+      gsap.to('#s3-arrow', { autoAlpha: 1, y: 0, duration: .5, delay: .3 });
+      gsap.to('#s3-box-b', { autoAlpha: 1, y: 0, duration: .7, delay: .5, ease: 'back.out(1.2)' });
+    },
+    () => gsap.to('#s3-sub',   { autoAlpha: 1, y: 0, duration: .6 }),
+  ],
+  4: [
+    () => gsap.to('#s4-title', { autoAlpha: 1, y: 0, duration: .6 }),
+    () => {
+      gsap.to('#s4-t1',    { autoAlpha: 1, y: 0, duration: .6 });
+      gsap.to('#s4-conn1', { autoAlpha: 1, y: 0, duration: .3, delay: .4 });
+    },
+    () => {
+      gsap.to('#s4-t2',    { autoAlpha: 1, y: 0, duration: .6 });
+      gsap.to('#s4-conn2', { autoAlpha: 1, y: 0, duration: .3, delay: .4 });
+    },
+    () => gsap.to('#s4-t3',    { autoAlpha: 1, y: 0, duration: .6 }),
+    () => gsap.to('#s4-insight',{ autoAlpha: 1, y: 0, duration: .7 }),
+  ],
+  5: [
+    () => gsap.to('#s5-title', { autoAlpha: 1, y: 0, duration: .6 }),
+    () => {
+      gsap.to('#ln-book',  { autoAlpha: 1, y: 0, duration: .5 });
+      setTimeout(() => document.getElementById('ln-book').classList.add('active'), 300);
+    },
+    () => {
+      gsap.to('#s5-arc1', { autoAlpha: 1, duration: .5 });
+      gsap.to('#ln-tool',  { autoAlpha: 1, y: 0, duration: .5, delay: .4 });
+      setTimeout(() => document.getElementById('ln-tool').classList.add('active'), 700);
+    },
+    () => {
+      gsap.to('#s5-arc2', { autoAlpha: 1, duration: .5 });
+      gsap.to('#ln-video', { autoAlpha: 1, y: 0, duration: .5, delay: .4 });
+      setTimeout(() => document.getElementById('ln-video').classList.add('active'), 700);
+    },
+    () => {
+      gsap.to('#s5-arc3',    { autoAlpha: 1, duration: .5 });
+      gsap.to('#s5-tagline', { autoAlpha: 1, y: 0, duration: .8, delay: .3, ease: 'back.out(1.2)' });
+    },
+  ],
+  6: [
+    () => gsap.to('#s6-q',    { autoAlpha: 1, y: 0, duration: .9, ease: 'power2.out' }),
+    () => {
+      gsap.to('#s6-rule', { width: 240, duration: .8, ease: 'power2.out' });
+      gsap.to('#s6-sub',  { autoAlpha: 1, y: 0, duration: .7, delay: .5, ease: 'back.out(1.4)' });
+    },
+    () => gsap.to('#s6-small', { autoAlpha: 1, y: 0, duration: .7 }),
+  ],
+  7: [
+    () => {
+      gsap.to('#s7-tag',   { autoAlpha: 1, y: 0, duration: .5 });
+      gsap.to('#s7-title', { autoAlpha: 1, y: 0, duration: .7, delay: .2 });
+    },
+    () => {
+      gsap.to('.stat-row', { autoAlpha: 1, y: 0, duration: .6 });
+      animateCount('s7-n1', 20, 1400);
+      animateCount('s7-n2', 3,  1000);
+      animateCount('s7-n3', 4,  900);
+    },
+    () => gsap.to('#s7-cta', { autoAlpha: 1, y: 0, duration: .7 }),
+  ],
+};
+
+function animateCount(id, target, duration) {
+  const el = document.getElementById(id);
+  const start = performance.now();
+  function update(now) {
+    const t = Math.min((now - start) / duration, 1);
+    const ease = 1 - Math.pow(1 - t, 3);
+    el.textContent = Math.round(ease * target);
+    if (t < 1) requestAnimationFrame(update);
+  }
+  requestAnimationFrame(update);
+}
+
+function handleAdvance() {
+  const steps = slideSteps[cur];
+  if (!steps) return;
+  const idx = stepIdx[cur] || 0;
+  if (idx < steps.length) {
+    steps[idx]();
+    stepIdx[cur] = idx + 1;
+  } else if (cur < TOTAL) {
+    showSlide(cur + 1);
+  }
+}
+
+function showSlide(n) {
+  document.querySelectorAll('.slide').forEach(s => s.classList.remove('current'));
+  document.getElementById('s' + n).classList.add('current');
+  cur = n;
+  resetSlide(n);
+  initStep(n);
+  broadcastSlide(n);
+  document.getElementById('slide-num').textContent = n + ' / ' + TOTAL;
+  document.getElementById('prog').style.width = (n / TOTAL * 100) + '%';
+  setTimeout(() => handleAdvance(), 80);
+}
+
+/* ── 初始化 ── */
+function init() {
+  for (let i = 1; i <= TOTAL; i++) resetSlide(i);
+  showSlide(1);
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); handleAdvance(); }
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      if (cur > 1) showSlide(cur - 1);
+    }
+    if (e.key === 'f') document.documentElement.requestFullscreen?.();
+  });
+
+  document.addEventListener('click', e => {
+    if (e.target.closest('button, a, input')) return;
+    handleAdvance();
+  });
+
+  let tx = 0;
+  document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; });
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - tx;
+    if (Math.abs(dx) > 50) { dx < 0 ? handleAdvance() : (cur > 1 && showSlide(cur - 1)); }
+  });
+}
+
+function scaleCanvas() {
+  const deck = document.getElementById('deck');
+  const W = 1920, H = 1080;
+  const scale = Math.min(window.innerWidth / W, window.innerHeight / H);
+  const ml = (window.innerWidth  - W * scale) / 2;
+  const mt = (window.innerHeight - H * scale) / 2;
+  deck.style.cssText = `width:${W}px;height:${H}px;transform:scale(${scale});transform-origin:top left;margin-left:${ml}px;margin-top:${mt}px;`;
+}
+window.addEventListener('resize', scaleCanvas);
+scaleCanvas();
+window.addEventListener('load', init);
+</script>
+
+<script>
+/* ── 提词器联动（BroadcastChannel slide-sync）── */
+(function() {
+  let _bc = null;
+  let _scriptText = null;
+  let _presentationStarted = false;
+
+  const SCRIPT_URL = window.location.origin + '/works/04-ai-content-system/script.md';
+
+  const fetchScript = async () => {
+    if (_scriptText) return _scriptText;
+    try {
+      const res = await fetch(SCRIPT_URL);
+      if (res.ok) _scriptText = await res.text();
+    } catch(e) {}
+    return _scriptText;
+  };
+
+  fetchScript();
+
+  try {
+    _bc = new BroadcastChannel('slide-sync');
+    _bc.postMessage({ type: 'reset' });
+    setInterval(() => _bc && _bc.postMessage({ type: 'heartbeat' }), 2000);
+
+    _bc.onmessage = async (e) => {
+      const msg = e.data || {};
+      if (msg.type === 'request-script') {
+        const text = await fetchScript();
+        if (text) _bc.postMessage({ type: 'load-script', text, name: 'script.md', slide: cur, scriptUrl: SCRIPT_URL });
+      }
+    };
+  } catch(e) {}
+
+  function broadcastSlide(n) {
+    try { _bc && _bc.postMessage({ type: 'slide-change', slide: n }); } catch(e) {}
+  }
+
+  const _origHandleAdvance = handleAdvance;
+  const _wrapped = function() {
+    if (!_presentationStarted) { _presentationStarted = true; broadcastSlide(cur); }
+    _origHandleAdvance();
+  };
+  document.removeEventListener('click', handleAdvance);
+  document.addEventListener('click', _wrapped);
+  handleAdvance = _wrapped;
+
+  window._broadcastSlide = broadcastSlide;
+})();
+</script>
+
+</body>
+</html>
