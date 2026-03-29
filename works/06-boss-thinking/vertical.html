@@ -1,194 +1,336 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8"/>
-  <title>老板思维 — 竖版</title>
-  <link rel="stylesheet" href="../vendor/fonts.css">
-  <script src="../vendor/gsap.min.js"></script>
-  <style>
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    html,body{width:100%;height:100%;background:#1a1410;overflow:hidden}
-    :root{
-      --bg:#f5f0e8;--ink:#1a1410;
-      --red:#c8432a;--blue:#2a5fc8;--gold:#e8a020;--green:#2a8c4a;--purple:#6b3fa0;
-      --white:#fff;--dim:rgba(26,20,16,.5);
-      --fd:'Caveat',cursive;--fl:'Space Mono',monospace;--fb:'Noto Sans SC',sans-serif;
-    }
-    #deck[data-h="1920"]{
-      --hero:110px;--h1:64px;--h2:44px;--body:30px;--label:20px;
-    }
-    #deck{position:relative;background:var(--bg);background-image:radial-gradient(circle,rgba(26,20,16,.08) 1.5px,transparent 1.5px);background-size:40px 40px;overflow:hidden}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>老板思维 — 竖版（深色信息流）</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700;900&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+<script src="../vendor/gsap.min.js"></script>
+<style>
+/* ===== 主题 9：深色信息流 ===== */
+:root {
+  --bg:      #0d1117;
+  --bg2:     rgba(22,27,34,0.85);
+  --ink:     #e6edf3;
+  --dim:     #8b949e;
+  --accent1: #58a6ff;
+  --accent2: #f78166;
+  --accent3: #d2a8ff;
+  --accent4: #7ee787;
+  --accent5: #ff7b72;
+  --white:   #161b22;
 
-    .slide{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 60px 520px;opacity:0;pointer-events:none;transition:opacity .35s;text-align:center}
-    .slide.current{opacity:1;pointer-events:all}
+  --font-display: 'DM Sans', sans-serif;
+  --font-label:   'Source Code Pro', monospace;
+  --font-body:    'Noto Sans SC', 'DM Sans', sans-serif;
 
-    #prog-wrap{position:absolute;bottom:0;left:0;right:0;height:5px;background:rgba(26,20,16,.1);z-index:100}
-    #prog{height:100%;background:var(--red);transition:width .4s}
+  --card-bg:     rgba(22,27,34,0.85);
+  --card-border: 1px solid rgba(88,166,255,0.1);
+  --card-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  --card-radius: 12px;
+}
 
-    #subtitle-layer{position:absolute;bottom:300px;left:40px;right:140px;z-index:99;font-family:var(--fb);font-size:34px;font-weight:700;color:var(--ink);text-align:center;line-height:1.6;text-shadow:0 1px 4px rgba(245,240,232,.9);background:rgba(245,240,232,.65);border-radius:12px;padding:12px 20px;pointer-events:none;opacity:0;transition:opacity .3s;max-height:120px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-    #subtitle-layer.on{opacity:1}
+/* 竖版字号覆盖 */
+#deck[data-h="1920"] {
+  --size-hero:    115px;
+  --size-display: 96px;
+  --size-h1:      58px;
+  --size-h2:      38px;
+  --size-body:    26px;
+  --size-label:   19px;
+  --size-caption: 16px;
+  --pad-slide:    60px;
+}
 
-    .hero{font-family:var(--fd);font-size:var(--hero);color:var(--ink);line-height:1.1}
-    .h1{font-family:var(--fd);font-size:var(--h1);color:var(--ink);line-height:1.2}
-    .h2{font-family:var(--fd);font-size:var(--h2);color:var(--ink);line-height:1.3}
-    .body{font-family:var(--fb);font-size:var(--body);color:var(--ink);line-height:1.7;max-width:960px;opacity:.85}
-    .label{font-family:var(--fl);font-size:var(--label);color:var(--dim);letter-spacing:.05em}
-    .accent{color:var(--red)}
-    .blue{color:var(--blue)}
-    .gold{color:var(--gold)}
-    .card{background:var(--white);border:2px solid var(--ink);box-shadow:6px 6px 0 var(--ink);border-radius:4px;padding:28px 36px;width:100%;text-align:left}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{background:#000;overflow:hidden;width:100%;height:100%}
+#deck{
+  position:relative;
+  background:var(--bg);
+  background-image:radial-gradient(rgba(88,166,255,0.03) 1px, transparent 1px);
+  background-size:32px 32px;
+  overflow:hidden;
+}
+.slide{
+  position:absolute;inset:0;
+  padding:80px 60px 580px 60px;
+  display:none;flex-direction:column;
+  font-family:var(--font-body);
+  color:var(--ink);
+}
+.slide.current{display:flex}
 
-    /* S1 */
-    #s1{gap:24px}
-    .chat-bubble{width:100%;padding:20px 28px;border-radius:16px 16px 16px 4px;font-family:var(--fb);font-size:28px;color:var(--ink);line-height:1.5;position:relative}
-    .chat-bubble.user{background:var(--blue);color:var(--white);border-radius:16px 16px 4px 16px;text-align:right;margin-left:80px}
-    .chat-bubble.ai{background:var(--white);border:2px solid var(--ink);margin-right:80px}
-    .chat-label{font-family:var(--fl);font-size:16px;color:var(--dim);margin-bottom:4px}
-    .punchline{font-family:var(--fd);font-size:var(--h2);color:var(--red);margin-top:16px}
+/* ===== 品牌层 ===== */
+.brand-layer{
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  z-index:9999;pointer-events:none;
+  font-family:var(--font-label);
+}
+.brand-layer .brand-name{position:absolute;top:28px;right:36px;font-size:15px;font-weight:600;color:rgba(230,237,243,0.35);letter-spacing:1px}
+.brand-layer .slide-tag{position:absolute;top:28px;left:36px;font-size:12px;color:rgba(230,237,243,0.3);text-transform:uppercase;letter-spacing:2px}
+.brand-layer .page-num{position:absolute;bottom:28px;right:36px;font-size:13px;color:rgba(230,237,243,0.3)}
+.brand-layer .source-tag{position:absolute;bottom:28px;left:36px;font-size:12px;color:rgba(230,237,243,0.25);letter-spacing:1px}
 
-    /* S2 */
-    #s2{gap:16px}
-    .fail-row{display:flex;gap:12px;width:100%;align-items:center}
-    .fail-input{flex:1;padding:16px 20px;border:2px dashed rgba(26,20,16,.2);border-radius:8px;font-family:var(--fb);font-size:26px;color:var(--dim);text-align:left}
-    .fail-result{font-size:32px;flex-shrink:0}
-    .boss-quotes{width:100%;display:flex;flex-direction:column;gap:10px}
-    .boss-quote{padding:14px 24px;border-left:4px solid var(--gold);background:rgba(232,160,32,.06);font-family:var(--fd);font-size:var(--h2);color:var(--ink);text-align:left}
+/* ===== 关键词高亮 ===== */
+.kw-blue{color:var(--accent1)}.kw-orange{color:var(--accent2)}.kw-purple{color:var(--accent3)}.kw-green{color:var(--accent4)}.kw-red{color:var(--accent5)}
 
-    /* S3 */
-    #s3{gap:20px}
-    .method-card{width:100%;padding:24px 28px;border:2px solid var(--ink);box-shadow:4px 4px 0 var(--ink);background:var(--white);text-align:left;display:flex;gap:20px;align-items:flex-start}
-    .method-card .num{font-family:var(--fd);font-size:48px;color:var(--red);flex-shrink:0;line-height:1}
-    .method-card .title{font-family:var(--fd);font-size:var(--h2);color:var(--ink)}
-    .method-card .desc{font-family:var(--fb);font-size:24px;color:var(--dim);margin-top:4px;line-height:1.5}
+/* ===== 卡片 ===== */
+.info-card{background:var(--card-bg);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--card-shadow);backdrop-filter:blur(12px);padding:28px 24px;border-left:3px solid var(--accent1)}
+.info-card.orange{border-left-color:var(--accent2)}.info-card.purple{border-left-color:var(--accent3)}.info-card.green{border-left-color:var(--accent4)}.info-card.red{border-left-color:var(--accent5)}
 
-    /* S4 */
-    #s4{gap:20px}
-    .value-test{width:100%;padding:32px;border:3px solid var(--gold);background:rgba(232,160,32,.06);text-align:center}
-    .value-test .question{font-family:var(--fd);font-size:var(--h1);color:var(--gold)}
-    .value-test .sub{font-family:var(--fb);font-size:24px;color:var(--dim);margin-top:8px}
+/* ===== 微光分隔线 ===== */
+.glow-divider{height:1px;background:linear-gradient(90deg,transparent,rgba(88,166,255,0.3),transparent);margin:20px 0}
 
-    /* S5 */
-    #s5{gap:24px}
-    .boss-grid{display:flex;gap:16px;width:100%}
-    .boss-item{flex:1;padding:20px;border:2px solid var(--ink);box-shadow:4px 4px 0 var(--ink);background:var(--white);text-align:center}
-    .boss-item .icon{font-size:40px}
-    .boss-item .text{font-family:var(--fb);font-size:22px;color:var(--ink);margin-top:8px}
-    .cta-btn{display:inline-block;padding:16px 48px;border:2px solid var(--red);border-radius:999px;font-family:var(--fd);font-size:var(--h2);color:var(--red);animation:pulse 2s ease infinite}
-    @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(200,67,42,.3)}50%{box-shadow:0 0 0 16px rgba(200,67,42,0)}}
-  </style>
+/* ===== 进度条 ===== */
+.progress-bar{position:absolute;bottom:0;left:0;height:3px;background:linear-gradient(90deg,var(--accent1),var(--accent3));transition:width .4s ease;z-index:10000}
+
+/* ===== 字幕层 ===== */
+#subtitle-layer{
+  position:absolute;bottom:300px;left:40px;right:140px;z-index:99;
+  font-family:var(--font-body);font-size:34px;font-weight:700;
+  color:#fff;text-align:center;line-height:1.6;
+  text-shadow:0 2px 8px rgba(0,0,0,.8);
+  background:rgba(13,17,23,.65);border-radius:12px;
+  padding:12px 20px;pointer-events:none;
+  opacity:0;transition:opacity .3s;
+  max-height:120px;overflow:hidden;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+}
+#subtitle-layer.on{opacity:1}
+
+/* ========== S01 ========== */
+#s1{align-items:center;justify-content:center;text-align:center;gap:24px}
+#s1 .hook-line{font-size:var(--size-body);color:var(--dim);max-width:800px;line-height:1.6}
+#s1 .punch-line{font-size:var(--size-display);font-weight:900;line-height:1.1;max-width:900px}
+#s1 .main-title{font-size:var(--size-h1);font-weight:900;line-height:1.3;max-width:900px}
+
+/* ========== S02 双列卡片网格 ========== */
+#s2 .title-zone{margin-bottom:20px}
+#s2 .title-zone h2{font-size:var(--size-h1);font-weight:900;margin-bottom:8px}
+#s2 .en-tag{font-family:var(--font-label);font-size:var(--size-caption);color:var(--dim);text-transform:uppercase;letter-spacing:2px}
+#s2 .grid-zone{display:grid;grid-template-columns:1fr 1fr;gap:16px;flex:1}
+#s2 .grid-zone .info-card{padding:24px 20px;display:flex;flex-direction:column;gap:8px}
+#s2 .card-icon{font-size:28px}
+#s2 .card-title{font-size:var(--size-label);font-weight:700}
+#s2 .card-body{font-size:var(--size-caption);color:var(--dim);line-height:1.5}
+#s2 .wide-card{grid-column:1/3}
+
+/* ========== S03 步骤+总结 ========== */
+#s3 .title-zone{margin-bottom:20px}
+#s3 .title-zone h2{font-size:var(--size-h1);font-weight:900;margin-bottom:8px}
+#s3 .en-tag{font-family:var(--font-label);font-size:var(--size-caption);color:var(--dim);text-transform:uppercase;letter-spacing:2px}
+#s3 .steps-zone{display:flex;flex-direction:column;gap:16px;flex:1}
+#s3 .step-card{display:flex;align-items:flex-start;gap:16px}
+#s3 .step-num{flex:0 0 48px;width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:var(--size-label);color:#0d1117}
+#s3 .step-content{flex:1;background:var(--card-bg);border:var(--card-border);border-radius:var(--card-radius);backdrop-filter:blur(12px);padding:20px 24px;border-left:3px solid}
+#s3 .step-title{font-size:var(--size-label);font-weight:700;margin-bottom:6px}
+#s3 .step-body{font-size:var(--size-caption);color:var(--dim);line-height:1.5}
+#s3 .summary-card{background:var(--card-bg);border:var(--card-border);border-radius:var(--card-radius);backdrop-filter:blur(12px);padding:28px 24px;border-left:4px solid var(--accent1);margin-top:8px}
+#s3 .quote-text{font-size:var(--size-h2);font-weight:700;line-height:1.4}
+
+/* ========== S04 三列+总结 ========== */
+#s4 .title-zone{margin-bottom:20px}
+#s4 .title-zone h2{font-size:var(--size-h1);font-weight:900;margin-bottom:8px}
+#s4 .en-tag{font-family:var(--font-label);font-size:var(--size-caption);color:var(--dim);text-transform:uppercase;letter-spacing:2px}
+#s4 .three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:20px}
+#s4 .col-card{background:var(--card-bg);border:var(--card-border);border-radius:var(--card-radius);backdrop-filter:blur(12px);padding:24px 16px;text-align:center}
+#s4 .col-icon{font-size:32px;margin-bottom:10px}
+#s4 .col-title{font-size:var(--size-label);font-weight:700;margin-bottom:6px}
+#s4 .col-body{font-size:var(--size-caption);color:var(--dim);line-height:1.5}
+#s4 .summary-card{background:var(--card-bg);border:var(--card-border);border-radius:var(--card-radius);backdrop-filter:blur(12px);padding:32px 28px;border-left:4px solid var(--accent2);flex:1;display:flex;flex-direction:column;justify-content:center;gap:16px}
+#s4 .quote-text{font-size:var(--size-h2);font-weight:700;line-height:1.4}
+#s4 .quote-sub{font-size:var(--size-caption);color:var(--dim);line-height:1.5}
+
+/* ========== S05 居中收尾 ========== */
+#s5{align-items:center;justify-content:center;text-align:center;gap:32px}
+#s5 .topic-tag{font-family:var(--font-label);font-size:var(--size-caption);color:var(--accent1);text-transform:uppercase;letter-spacing:3px}
+#s5 .big-insight{font-size:var(--size-h1);font-weight:900;line-height:1.3;max-width:860px}
+#s5 .final-quote{font-size:var(--size-display);font-weight:900;line-height:1.15;max-width:900px}
+#s5 .final-sub{font-size:var(--size-body);color:var(--dim);max-width:700px;line-height:1.5}
+</style>
 </head>
 <body>
 <div id="deck" data-w="1080" data-h="1920">
 
-  <!-- S1 开场钩子 -->
-  <div class="slide current" id="s1">
-    <div id="s1-b1" class="chat-bubble user"><div class="chat-label">我</div>帮我做个抖音视频，要有冲击感</div>
-    <div id="s1-b2" class="chat-bubble ai"><div class="chat-label">AI</div>已完成，请查看</div>
-    <div id="s1-b3" class="chat-bubble user"><div class="chat-label">我</div>不对，差点意思，你再改改</div>
-    <div id="s1-punch" class="punchline">这不就是我最讨厌的<br>那种老板吗？</div>
+<!-- ==================== S01: 开场钩子 ==================== -->
+<div class="slide current" id="s1">
+  <div class="brand-layer">
+    <span class="slide-tag">SLIDE 1 · HOOK</span>
+    <span class="brand-name">MoonlitClear</span>
+    <span class="page-num">1 / 5</span>
+    <span class="source-tag">MoonlitClear · 《老板思维》</span>
   </div>
-
-  <!-- S2 你骂AI的话 -->
-  <div class="slide" id="s2">
-    <div id="s2-title" class="h1">你骂AI的话<br><span class="accent">老板骂过你</span></div>
-    <div id="s2-fails" style="width:100%;display:flex;flex-direction:column;gap:10px">
-      <div class="fail-row"><div class="fail-input">"帮我优化一下"</div><div class="fail-result">❌</div></div>
-      <div class="fail-row"><div class="fail-input">"风格再年轻一点"</div><div class="fail-result">❌</div></div>
-      <div class="fail-row"><div class="fail-input">"算了你重写"</div><div class="fail-result">❌</div></div>
-    </div>
-    <div id="s2-quotes" class="boss-quotes">
-      <div class="boss-quote">"方案再高端一点"</div>
-      <div class="boss-quote">"你再想想"</div>
-    </div>
-    <div id="s2-punch" class="body" style="margin-top:12px">不是老板无能。<br>是<span class="accent" style="font-weight:900">人类的通病</span>。</div>
-  </div>
-
-  <!-- S3 三个问题 -->
-  <div class="slide" id="s3">
-    <div id="s3-title" class="h1">三个问题<br>把<span class="gold">雾</span>变成<span class="blue">图纸</span></div>
-    <div id="s3-c1" class="method-card"><div class="num">1</div><div><div class="title">目标是什么？</div><div class="desc">把"好"拆成参数<br>AI就不迷路</div></div></div>
-    <div id="s3-c2" class="method-card"><div class="num">2</div><div><div class="title">约束是什么？</div><div class="desc">没有边界的需求<br>不是自由，是混乱</div></div></div>
-    <div id="s3-c3" class="method-card"><div class="num">3</div><div><div class="title">验收标准？</div><div class="desc">给AI下指令 = 定义接口<br>思维清楚 > 语文好</div></div></div>
-  </div>
-
-  <!-- S4 需求价值 -->
-  <div class="slide" id="s4">
-    <div id="s4-title" class="h1">不是所有需求<br><span class="accent">都该做</span></div>
-    <div id="s4-body" class="body">一天给AI派十几个任务<br>晚上回头一看，大部分没用<br>只是在享受<span class="accent">"一说话就有人干活"</span>的快感</div>
-    <div id="s4-test" class="value-test">
-      <div class="question">做完之后<br>世界有什么不同？</div>
-      <div class="sub">答不上来 → 这个需求不该存在</div>
-    </div>
-  </div>
-
-  <!-- S5 每个人都是老板 -->
-  <div class="slide" id="s5">
-    <div id="s5-title" class="hero">每个人<br>都是<span class="accent">老板</span>了</div>
-    <div id="s5-grid" class="boss-grid">
-      <div class="boss-item"><div class="icon">💻</div><div class="text">写代码</div></div>
-      <div class="boss-item"><div class="icon">🎨</div><div class="text">做设计</div></div>
-      <div class="boss-item"><div class="icon">📊</div><div class="text">分析</div></div>
-      <div class="boss-item"><div class="icon">📧</div><div class="text">回邮件</div></div>
-    </div>
-    <div id="s5-punch" class="body" style="font-weight:700;color:var(--ink);opacity:1">你管理AI的上限<br>就是你<span class="accent">思考的上限</span></div>
-    <div id="s5-cta" class="cta-btn">收藏 · 下条继续</div>
-  </div>
-
-  <div id="prog-wrap"><div id="prog"></div></div>
-  <div id="subtitle-layer"></div>
+  <div class="hook-line" id="s1-hook" style="visibility:hidden">我让 AI 帮我做视频，说"要有冲击感"</div>
+  <div class="hook-line" id="s1-hook2" style="visibility:hidden">AI 做了。我看完说——</div>
+  <div class="punch-line" id="s1-punch" style="visibility:hidden">"<span class="kw-orange">差点意思</span>，<br>你再<span class="kw-red">改改</span>"</div>
+  <div class="glow-divider" id="s1-div" style="visibility:hidden"></div>
+  <div class="main-title" id="s1-main" style="visibility:hidden">这不就是我最<span class="kw-blue">讨厌</span>的<br>那种<span class="kw-orange">老板</span>吗？</div>
 </div>
+
+<!-- ==================== S02: 你骂AI的话老板骂过你 ==================== -->
+<div class="slide" id="s2">
+  <div class="brand-layer">
+    <span class="slide-tag">SLIDE 2 · EMPATHY</span>
+    <span class="brand-name">MoonlitClear</span>
+    <span class="page-num">2 / 5</span>
+    <span class="source-tag">MoonlitClear · 《老板思维》</span>
+  </div>
+  <div class="title-zone">
+    <h2 id="s2-title" style="visibility:hidden">你骂AI的话<br><span class="kw-blue">老板骂过你</span></h2>
+    <div class="en-tag" id="s2-tag" style="visibility:hidden">THE SAME FRUSTRATION</div>
+  </div>
+  <div class="grid-zone">
+    <div class="info-card" id="s2-c1" style="visibility:hidden">
+      <div class="card-icon">💬</div>
+      <div class="card-title">"帮我优化一下"</div>
+      <div class="card-body">没目标受众、没字数要求、没风格参照</div>
+    </div>
+    <div class="info-card orange" id="s2-c2" style="visibility:hidden">
+      <div class="card-icon">🔄</div>
+      <div class="card-title">"风格再年轻点"</div>
+      <div class="card-body">改了还是不对，三轮下来觉得 AI 笨</div>
+    </div>
+    <div class="info-card purple" id="s2-c3" style="visibility:hidden">
+      <div class="card-icon">👔</div>
+      <div class="card-title">"方案再高端点"</div>
+      <div class="card-body">老板说的和你对AI说的，一模一样</div>
+    </div>
+    <div class="info-card green" id="s2-c4" style="visibility:hidden">
+      <div class="card-icon">🧠</div>
+      <div class="card-title">不是 AI 笨</div>
+      <div class="card-body">是你脑子里的需求是一团<span class="kw-orange">雾</span>——有感觉，但没有语言</div>
+    </div>
+    <div class="info-card red wide-card" id="s2-c5" style="visibility:hidden">
+      <div class="card-icon">💰</div>
+      <div class="card-title">"不对""再改改""差点意思"</div>
+      <div class="card-body">全世界最贵的三句话。对AI返工不花钱，对团队返工，成本巨大</div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== S03: 三个问题把雾变成图纸 ==================== -->
+<div class="slide" id="s3">
+  <div class="brand-layer">
+    <span class="slide-tag">SLIDE 3 · METHOD</span>
+    <span class="brand-name">MoonlitClear</span>
+    <span class="page-num">3 / 5</span>
+    <span class="source-tag">MoonlitClear · 《老板思维》</span>
+  </div>
+  <div class="title-zone">
+    <h2 id="s3-title" style="visibility:hidden">三个问题<br>把<span class="kw-purple">雾</span>变成<span class="kw-green">图纸</span></h2>
+    <div class="en-tag" id="s3-tag" style="visibility:hidden">FROM FOG TO BLUEPRINT</div>
+  </div>
+  <div class="steps-zone">
+    <div class="step-card" id="s3-step1" style="visibility:hidden">
+      <div class="step-num" style="background:var(--accent1)">1</div>
+      <div class="step-content" style="border-left-color:var(--accent1)">
+        <div class="step-title">目标是什么？</div>
+        <div class="step-body">不是"写篇好文章"，是"1500字口播稿，受众25-35岁，发抖音"。把"好"拆成参数</div>
+      </div>
+    </div>
+    <div class="step-card" id="s3-step2" style="visibility:hidden">
+      <div class="step-num" style="background:var(--accent2)">2</div>
+      <div class="step-content" style="border-left-color:var(--accent2)">
+        <div class="step-title">约束是什么？</div>
+        <div class="step-body">不超2分钟、不用黑话、从个人经历切入。约束不是限制，是边界</div>
+      </div>
+    </div>
+    <div class="step-card" id="s3-step3" style="visibility:hidden">
+      <div class="step-num" style="background:var(--accent4)">3</div>
+      <div class="step-content" style="border-left-color:var(--accent4)">
+        <div class="step-title">验收标准是什么？</div>
+        <div class="step-body">"读完记住三个要点、每段不超四行"——这才叫标准，不是"我看着舒服"</div>
+      </div>
+    </div>
+    <div class="summary-card" id="s3-summary" style="visibility:hidden">
+      <div class="quote-text">Prompt 写得好的人，不是<span class="kw-blue">语文好</span>，<br>是<span class="kw-orange">思维清楚</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== S04: 不是所有需求都该做 ==================== -->
+<div class="slide" id="s4">
+  <div class="brand-layer">
+    <span class="slide-tag">SLIDE 4 · INSIGHT</span>
+    <span class="brand-name">MoonlitClear</span>
+    <span class="page-num">4 / 5</span>
+    <span class="source-tag">MoonlitClear · 《老板思维》</span>
+  </div>
+  <div class="title-zone">
+    <h2 id="s4-title" style="visibility:hidden">不是所有需求<br>都<span class="kw-red">该做</span></h2>
+    <div class="en-tag" id="s4-tag" style="visibility:hidden">VALUE > VOLUME</div>
+  </div>
+  <div class="three-col">
+    <div class="col-card" id="s4-col1" style="visibility:hidden">
+      <div class="col-icon">⚡</div>
+      <div class="col-title">效率幻觉</div>
+      <div class="col-body">一天给AI派十几个任务，感觉效率爆表</div>
+    </div>
+    <div class="col-card" id="s4-col2" style="visibility:hidden">
+      <div class="col-icon">📊</div>
+      <div class="col-title">真实结果</div>
+      <div class="col-body">晚上回头看，大部分没用上</div>
+    </div>
+    <div class="col-card" id="s4-col3" style="visibility:hidden">
+      <div class="col-icon">🎯</div>
+      <div class="col-title">真相</div>
+      <div class="col-body">享受"一说话就有人干活"的快感</div>
+    </div>
+  </div>
+  <div class="summary-card" id="s4-summary" style="visibility:hidden">
+    <div class="quote-text">做完之后，<span class="kw-green">世界</span>有什么<span class="kw-orange">不同</span>？</div>
+    <div class="quote-sub">答不上来，这个需求就不该存在。<br>给AI派没价值的活浪费时间，给团队派没价值的活浪费人心。</div>
+  </div>
+</div>
+
+<!-- ==================== S05: 每个人都是老板了 ==================== -->
+<div class="slide" id="s5">
+  <div class="brand-layer">
+    <span class="slide-tag">SLIDE 5 · TAKEAWAY</span>
+    <span class="brand-name">MoonlitClear</span>
+    <span class="page-num">5 / 5</span>
+    <span class="source-tag">MoonlitClear · 《老板思维》</span>
+  </div>
+  <div class="topic-tag" id="s5-tag" style="visibility:hidden">THE BOSS MINDSET</div>
+  <div class="big-insight" id="s5-insight" style="visibility:hidden">AI 时代，<span class="kw-blue">每个人</span><br>都是<span class="kw-orange">老板</span>了</div>
+  <div class="glow-divider" id="s5-div" style="visibility:hidden;width:200px"></div>
+  <div class="final-quote" id="s5-quote" style="visibility:hidden">你管理AI的<span class="kw-purple">上限</span><br>就是你思考的<span class="kw-green">上限</span></div>
+  <div class="final-sub" id="s5-sub" style="visibility:hidden">"怎么做"这件事，AI 会越来越强<br>"做什么"这件事，永远得你自己想清楚</div>
+</div>
+
+<!-- 字幕层 -->
+<div id="subtitle-layer"></div>
+
+<!-- 进度条 -->
+<div class="progress-bar" id="prog" style="width:20%"></div>
+
+</div><!-- #deck -->
+
 <script>
-const TOTAL=5;let cur=1;const stepIdx={};
-function initStep(n){stepIdx[n]=0}
-
-const slideSteps={
-  1:[
-    ()=>gsap.to('#s1-b1',{autoAlpha:1,x:0,duration:.4,ease:'power3.out'}),
-    ()=>gsap.to('#s1-b2',{autoAlpha:1,x:0,duration:.4,ease:'power3.out'}),
-    ()=>{gsap.to('#s1-b3',{autoAlpha:1,x:0,duration:.4});gsap.to('#s1-punch',{autoAlpha:1,y:0,duration:.5,delay:.3,ease:'back.out(1.5)'})},
-  ],
-  2:[
-    ()=>gsap.to('#s2-title',{autoAlpha:1,y:0,duration:.5,ease:'power3.out'}),
-    ()=>gsap.to('#s2-fails',{autoAlpha:1,y:0,duration:.5}),
-    ()=>gsap.to('#s2-quotes',{autoAlpha:1,y:0,duration:.5}),
-    ()=>gsap.to('#s2-punch',{autoAlpha:1,y:0,duration:.5}),
-  ],
-  3:[
-    ()=>gsap.to('#s3-title',{autoAlpha:1,y:0,duration:.5,ease:'back.out(1.3)'}),
-    ()=>gsap.to('#s3-c1',{autoAlpha:1,y:0,duration:.4,ease:'power3.out'}),
-    ()=>gsap.to('#s3-c2',{autoAlpha:1,y:0,duration:.4,ease:'power3.out'}),
-    ()=>gsap.to('#s3-c3',{autoAlpha:1,y:0,duration:.4,ease:'power3.out'}),
-  ],
-  4:[
-    ()=>gsap.to('#s4-title',{autoAlpha:1,y:0,duration:.5}),
-    ()=>gsap.to('#s4-body',{autoAlpha:1,y:0,duration:.5}),
-    ()=>gsap.to('#s4-test',{autoAlpha:1,scale:1,duration:.6,ease:'back.out(1.5)'}),
-  ],
-  5:[
-    ()=>gsap.to('#s5-title',{autoAlpha:1,y:0,duration:.6,ease:'power3.out'}),
-    ()=>gsap.to('#s5-grid',{autoAlpha:1,y:0,duration:.5}),
-    ()=>gsap.to('#s5-punch',{autoAlpha:1,y:0,duration:.5}),
-    ()=>gsap.to('#s5-cta',{autoAlpha:1,y:0,duration:.5,ease:'back.out(1.5)'}),
-  ],
-};
-
-function initAllSlides(){
-  gsap.set(['#s1-b1','#s1-b2','#s1-b3'],{autoAlpha:0,x:30});
-  gsap.set('#s1-punch',{autoAlpha:0,y:20});
-  gsap.set(['#s2-title','#s2-fails','#s2-quotes','#s2-punch','#s3-title','#s3-c1','#s3-c2','#s3-c3','#s4-title','#s4-body','#s5-title','#s5-grid','#s5-punch','#s5-cta'],{autoAlpha:0,y:30});
-  gsap.set('#s4-test',{autoAlpha:0,scale:.9});
+/* ===== 画布缩放 ===== */
+function scaleCanvas(){
+  const deck=document.getElementById('deck'),W=1080,H=1920;
+  const s=Math.min(innerWidth/W,innerHeight/H);
+  deck.style.cssText=`width:${W}px;height:${H}px;transform:scale(${s});transform-origin:top left;margin-left:${(innerWidth-W*s)/2}px;margin-top:${(innerHeight-H*s)/2}px;position:relative;background:#0d1117;background-image:radial-gradient(rgba(88,166,255,0.03) 1px,transparent 1px);background-size:32px 32px;overflow:hidden`;
 }
+addEventListener('resize',scaleCanvas);scaleCanvas();
+
+/* ===== 导航 ===== */
+const TOTAL=5;let cur=1;const stepMap={};
+function initStep(n){stepMap[n]=0}
+for(let i=1;i<=TOTAL;i++)initStep(i);
+
 function resetSlide(n){
   gsap.killTweensOf('*');
-  const m={
-    1:()=>{gsap.set(['#s1-b1','#s1-b2','#s1-b3'],{autoAlpha:0,x:30});gsap.set('#s1-punch',{autoAlpha:0,y:20})},
-    2:()=>gsap.set(['#s2-title','#s2-fails','#s2-quotes','#s2-punch'],{autoAlpha:0,y:30}),
-    3:()=>gsap.set(['#s3-title','#s3-c1','#s3-c2','#s3-c3'],{autoAlpha:0,y:30}),
-    4:()=>{gsap.set(['#s4-title','#s4-body'],{autoAlpha:0,y:30});gsap.set('#s4-test',{autoAlpha:0,scale:.9})},
-    5:()=>gsap.set(['#s5-title','#s5-grid','#s5-punch','#s5-cta'],{autoAlpha:0,y:30}),
-  };
-  if(m[n])m[n]();
+  switch(n){
+    case 1:gsap.set(['#s1-hook','#s1-hook2','#s1-punch','#s1-div','#s1-main'],{autoAlpha:0,y:30});break;
+    case 2:gsap.set(['#s2-title','#s2-tag','#s2-c1','#s2-c2','#s2-c3','#s2-c4','#s2-c5'],{autoAlpha:0,y:25});break;
+    case 3:gsap.set(['#s3-title','#s3-tag','#s3-step1','#s3-step2','#s3-step3','#s3-summary'],{autoAlpha:0,y:25});break;
+    case 4:gsap.set(['#s4-title','#s4-tag','#s4-col1','#s4-col2','#s4-col3','#s4-summary'],{autoAlpha:0,y:25});break;
+    case 5:gsap.set(['#s5-tag','#s5-insight','#s5-div','#s5-quote','#s5-sub'],{autoAlpha:0,y:25});gsap.set('#s5-div',{width:0});break;
+  }
 }
+
 function showSlide(n){
   document.querySelectorAll('.slide').forEach(s=>s.classList.remove('current'));
   document.getElementById('s'+n).classList.add('current');
@@ -196,22 +338,84 @@ function showSlide(n){
   document.getElementById('prog').style.width=(n/TOTAL*100)+'%';
   setTimeout(()=>handleAdvance(),80);
 }
+
+/* ===== 动画 ===== */
+function animS1(step){
+  const tl=gsap.timeline({defaults:{duration:.5,ease:'back.out(1.4)'}});
+  switch(step){
+    case 0:tl.to('#s1-hook',{autoAlpha:1,y:0});break;
+    case 1:tl.to('#s1-hook2',{autoAlpha:1,y:0});break;
+    case 2:tl.to('#s1-punch',{autoAlpha:1,y:0,duration:.7});break;
+    case 3:tl.to('#s1-div',{autoAlpha:1,y:0,duration:.3}).to('#s1-main',{autoAlpha:1,y:0,duration:.6},'<0.2');break;
+  }
+}
+function animS2(step){
+  const tl=gsap.timeline({defaults:{duration:.45,ease:'back.out(1.2)'}});
+  switch(step){
+    case 0:tl.to('#s2-title',{autoAlpha:1,y:0}).to('#s2-tag',{autoAlpha:1,y:0,duration:.3},'<0.15');break;
+    case 1:tl.to('#s2-c1',{autoAlpha:1,y:0}).to('#s2-c2',{autoAlpha:1,y:0},'<0.12');break;
+    case 2:tl.to('#s2-c3',{autoAlpha:1,y:0}).to('#s2-c4',{autoAlpha:1,y:0},'<0.12');break;
+    case 3:tl.to('#s2-c5',{autoAlpha:1,y:0,duration:.6});break;
+  }
+}
+function animS3(step){
+  const tl=gsap.timeline({defaults:{duration:.45,ease:'back.out(1.2)'}});
+  switch(step){
+    case 0:tl.to('#s3-title',{autoAlpha:1,y:0}).to('#s3-tag',{autoAlpha:1,y:0,duration:.3},'<0.15');break;
+    case 1:tl.to('#s3-step1',{autoAlpha:1,y:0});break;
+    case 2:tl.to('#s3-step2',{autoAlpha:1,y:0});break;
+    case 3:tl.to('#s3-step3',{autoAlpha:1,y:0});break;
+    case 4:tl.to('#s3-summary',{autoAlpha:1,y:0,duration:.6,ease:'power2.out'});break;
+  }
+}
+function animS4(step){
+  const tl=gsap.timeline({defaults:{duration:.45,ease:'back.out(1.2)'}});
+  switch(step){
+    case 0:tl.to('#s4-title',{autoAlpha:1,y:0}).to('#s4-tag',{autoAlpha:1,y:0,duration:.3},'<0.15');break;
+    case 1:tl.to('#s4-col1',{autoAlpha:1,y:0}).to('#s4-col2',{autoAlpha:1,y:0},'<0.1').to('#s4-col3',{autoAlpha:1,y:0},'<0.1');break;
+    case 2:tl.to('#s4-summary',{autoAlpha:1,y:0,duration:.6,ease:'power2.out'});break;
+  }
+}
+function animS5(step){
+  const tl=gsap.timeline({defaults:{duration:.5,ease:'power2.out'}});
+  switch(step){
+    case 0:tl.to('#s5-tag',{autoAlpha:1,y:0,duration:.4});break;
+    case 1:tl.to('#s5-insight',{autoAlpha:1,y:0,duration:.7,ease:'back.out(1.2)'});break;
+    case 2:tl.to('#s5-div',{autoAlpha:1,y:0,duration:.3}).to('#s5-div',{width:200,duration:.6,ease:'power2.out'},'<').to('#s5-quote',{autoAlpha:1,y:0,duration:.8,ease:'back.out(1.1)'},'<0.3');break;
+    case 3:tl.to('#s5-sub',{autoAlpha:1,y:0,duration:.6});break;
+  }
+}
+
+const stepCounts={1:4,2:4,3:5,4:3,5:4};
+const animFns={1:animS1,2:animS2,3:animS3,4:animS4,5:animS5};
+
 function handleAdvance(){
-  const steps=slideSteps[cur],idx=stepIdx[cur];
-  if(idx<steps.length){steps[idx]();stepIdx[cur]++}
+  const step=stepMap[cur];
+  if(step<stepCounts[cur]){animFns[cur](step);stepMap[cur]++}
   else if(cur<TOTAL)showSlide(cur+1);
 }
-document.addEventListener('click',handleAdvance);
+function handleRetreat(){if(cur>1)showSlide(cur-1)}
+
+/* ===== 事件 ===== */
 document.addEventListener('keydown',e=>{
-  if(e.key===' '||e.key==='ArrowRight'){e.preventDefault();handleAdvance()}
-  if(e.key==='ArrowLeft'){e.preventDefault();if(cur>1)showSlide(cur-1)}
+  if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();handleAdvance()}
+  if(e.key==='ArrowLeft'){e.preventDefault();handleRetreat()}
+  if(e.key==='f')document.documentElement.requestFullscreen?.();
 });
-function scaleCanvas(){
-  const d=document.getElementById('deck'),W=1080,H=1920,s=Math.min(innerWidth/W,innerHeight/H);
-  d.style.cssText=`width:${W}px;height:${H}px;transform:scale(${s});transform-origin:top left;margin-left:${(innerWidth-W*s)/2}px;margin-top:${(innerHeight-H*s)/2}px;position:relative`;
-}
-addEventListener('resize',scaleCanvas);scaleCanvas();
-initAllSlides();for(let i=1;i<=TOTAL;i++)initStep(i);showSlide(1);
+document.addEventListener('click',e=>{
+  if(e.target.closest('button,a,input,select,[data-interactive]'))return;
+  handleAdvance();
+});
+let touchX=0;
+document.addEventListener('touchstart',e=>{touchX=e.touches[0].clientX});
+document.addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-touchX;
+  if(Math.abs(dx)>50){dx<0?handleAdvance():handleRetreat()}
+});
+
+/* ===== 初始化 ===== */
+resetSlide(1);
+setTimeout(()=>handleAdvance(),300);
 </script>
 </body>
 </html>

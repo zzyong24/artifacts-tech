@@ -52,7 +52,7 @@
 
 ---
 
-## 二、5 种竖版布局变体
+## 二、7 种竖版布局变体
 
 ### 变体 1：居中冲击型
 
@@ -412,7 +412,185 @@ gsap.from(el, { y: 40, autoAlpha: 0 });
 │
 ├─ 流程/步骤/因果 → 变体4：步骤纵向型
 │
-└─ 数据/统计/对比数字 → 变体5：数据焦点型
+├─ 数据/统计/对比数字 → 变体5：数据焦点型
+│
+├─ 多要点高密度（≥4块） → 变体6：双列卡片网格 ★推荐
+│
+└─ 章节总结/核心提炼 → 变体7：三列摘要+底部总结 ★推荐
 ```
 
 **混合使用**：一个视频内不同 Slide 可以用不同布局变体，增加视觉节奏感。推荐 2~3 种变体交替使用。
+
+---
+
+### 变体 6：双列卡片网格（Card Grid）
+
+**适合**：多要点并列、对比分析、信息密度高的内容页（配合主题 9 深色信息流效果最佳）
+
+```
+┌─────────────────┐
+│  标题区（大标题 + 彩色关键词）│  Y: 80~200
+│  英文小标签                  │
+│                              │
+│  ┌────────┐ ┌────────┐      │  Y: 220~750
+│  │ 卡片1  │ │ 卡片2  │      │  2列 CSS grid
+│  │ 图标+  │ │ 图标+  │      │
+│  │ 正文   │ │ 正文   │      │
+│  └────────┘ └────────┘      │
+│  ┌────────┐ ┌────────┐      │  Y: 770~1300
+│  │ 卡片3  │ │ 卡片4  │      │
+│  │ 图标+  │ │ 图标+  │      │
+│  │ 正文   │ │ 正文   │      │
+│  └────────┘ └────────┘      │
+│                              │
+│   [字幕区]                   │
+└─────────────────┘
+```
+
+**规则**：
+- 标题区 Y 80~200px：大号标题，关键词用 `.kw-*` 高亮，标题下方可加英文小标签（letter-spacing: 2px）
+- 网格区 Y 220~1300px：2 列 CSS grid，gap 16px
+- 每卡片：彩色左边框 3px + 图标/emoji 标题 + 正文（≤ 25 字）
+- 最多 4~6 张卡片（超过拆 Slide）
+- 卡片左边框颜色从 5 色强调轮换，不重复相邻色
+
+**CSS 要点**：
+```css
+.layout-card-grid {
+  display: flex;
+  flex-direction: column;
+  padding: 80px 60px 580px;
+}
+.layout-card-grid .title-zone {
+  margin-bottom: 20px;
+}
+.layout-card-grid .title-zone h2 {
+  font-size: var(--size-h1);
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+.layout-card-grid .title-zone .en-tag {
+  font-family: var(--font-label);
+  font-size: var(--size-caption);
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.layout-card-grid .grid-zone {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  flex: 1;
+}
+.layout-card-grid .grid-zone .info-card {
+  padding: 24px 20px;
+}
+.layout-card-grid .grid-zone .info-card .card-icon {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+.layout-card-grid .grid-zone .info-card .card-title {
+  font-size: var(--size-label);
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.layout-card-grid .grid-zone .info-card .card-body {
+  font-size: var(--size-caption);
+  color: var(--dim);
+  line-height: 1.5;
+}
+```
+
+---
+
+### 变体 7：三列摘要 + 底部总结（Summary）
+
+**适合**：章节总结、核心概念提炼、结论页（3 个核心点 + 1 个总结金句）
+
+```
+┌─────────────────┐
+│  标题区                      │  Y: 80~200
+│                              │
+│  ┌─────┐ ┌─────┐ ┌─────┐   │  Y: 220~600
+│  │概念1│ │概念2│ │概念3│   │  3列等宽
+│  │     │ │     │ │     │   │
+│  └─────┘ └─────┘ └─────┘   │
+│                              │
+│  ┌──────────────────────┐   │  Y: 640~1300
+│  │                      │   │
+│  │  总结金句大卡         │   │  全宽底部卡片
+│  │  （大字 + 引用风格）  │   │
+│  │                      │   │
+│  └──────────────────────┘   │
+│                              │
+│   [字幕区]                   │
+└─────────────────┘
+```
+
+**规则**：
+- 标题区 Y 80~200px：章节/总结标题
+- 三列卡 Y 220~600px：3 列 CSS grid，每列一个核心概念，顶部有彩色圆点或图标
+- 底部大卡 Y 640~1300px：全宽卡片，总结金句，字号放大，可用引用样式（左边框 + 斜体）
+- 三列卡片保持高度一致（align-items: stretch）
+- 底部金句卡可用渐变边框或双色左边框增强视觉
+
+**CSS 要点**：
+```css
+.layout-summary {
+  display: flex;
+  flex-direction: column;
+  padding: 80px 60px 580px;
+}
+.layout-summary .title-zone {
+  margin-bottom: 20px;
+}
+.layout-summary .three-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.layout-summary .three-col .col-card {
+  background: var(--card-bg);
+  border: var(--card-border);
+  border-radius: var(--card-radius);
+  backdrop-filter: blur(12px);
+  padding: 24px 16px;
+  text-align: center;
+}
+.layout-summary .three-col .col-card .col-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+}
+.layout-summary .three-col .col-card .col-title {
+  font-size: var(--size-label);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.layout-summary .three-col .col-card .col-body {
+  font-size: var(--size-caption);
+  color: var(--dim);
+  line-height: 1.5;
+}
+.layout-summary .summary-card {
+  background: var(--card-bg);
+  border: var(--card-border);
+  border-radius: var(--card-radius);
+  backdrop-filter: blur(12px);
+  padding: 36px 32px;
+  border-left: 4px solid var(--accent1);
+  flex: 1;
+}
+.layout-summary .summary-card .quote-text {
+  font-size: var(--size-h2);
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--ink);
+}
+.layout-summary .summary-card .quote-source {
+  font-size: var(--size-label);
+  color: var(--dim);
+  margin-top: 16px;
+}
+```

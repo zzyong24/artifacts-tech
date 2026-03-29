@@ -17,6 +17,7 @@
 | 6 | 科研极客 | 数据论文/学术海报 | 精确、密度感、高信息量 |
 | 7 | 3D 立体 | 产品/科技/工程 | 空间感、未来、沉浸 |
 | 8 | 纯动画概念 | 抽象原理/哲学/逻辑 | 极简、运动即信息 |
+| 9 | 深色信息流 | 知识博主竖版/读书笔记/科普 | 高密度、品牌感、慢学AI风 |
 
 ---
 
@@ -613,4 +614,152 @@
 
 <!-- 主题8: 纯动画概念 -->
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700&family=DM+Mono&display=swap" rel="stylesheet">
+
+<!-- 主题9: 深色信息流 -->
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700;900&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+```
+
+---
+
+## 主题 9：深色信息流
+
+适合：知识博主竖版视频、信息密度高的科普/读书笔记、对标「慢学AI」风格
+
+```css
+:root {
+  /* 色彩——对标慢学AI截帧 */
+  --bg:      #0d1117;
+  --bg2:     rgba(22,27,34,0.85);
+  --ink:     #e6edf3;
+  --dim:     #8b949e;
+  --accent1: #58a6ff;   /* 蓝：主强调/链接/标题高亮 */
+  --accent2: #f78166;   /* 橙：警示/数据/次强调 */
+  --accent3: #d2a8ff;   /* 紫：分类/标签 */
+  --accent4: #7ee787;   /* 绿：正向/完成/对比 */
+  --accent5: #ff7b72;   /* 红：否定/风险/删除 */
+  --white:   #161b22;   /* "白"实际是深灰卡片底 */
+
+  /* 字体 */
+  --font-display: 'DM Sans', sans-serif;
+  --font-label:   'Source Code Pro', monospace;
+  --font-body:    'Noto Sans SC', 'DM Sans', sans-serif;
+
+  /* 字号（横版基础，竖版见覆盖块）*/
+  --size-hero:    96px;
+  --size-display: 80px;
+  --size-h1:      48px;
+  --size-h2:      32px;
+  --size-body:    22px;
+  --size-label:   16px;
+  --size-caption: 13px;
+
+  /* 卡片 */
+  --card-bg:     rgba(22,27,34,0.85);
+  --card-border: 1px solid rgba(88,166,255,0.1);
+  --card-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  --card-radius: 12px;
+
+  /* 背景纹理——微点阵 */
+  --texture: radial-gradient(rgba(88,166,255,0.03) 1px, transparent 1px);
+  --texture-size: 32px 32px;
+}
+
+/* ===== 卡片系统 ===== */
+.info-card {
+  background: var(--card-bg);
+  border: var(--card-border);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+  backdrop-filter: blur(12px);
+  padding: 28px 32px;
+  border-left: 3px solid var(--accent1); /* 默认蓝色左边框 */
+}
+.info-card.orange { border-left-color: var(--accent2); }
+.info-card.purple { border-left-color: var(--accent3); }
+.info-card.green  { border-left-color: var(--accent4); }
+.info-card.red    { border-left-color: var(--accent5); }
+
+/* ===== 品牌层 ===== */
+.brand-layer {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 9999;
+  pointer-events: none;
+  padding: 28px 36px;
+  font-family: var(--font-label);
+}
+.brand-layer .brand-name {
+  position: absolute;
+  top: 28px; right: 36px;
+  font-size: 15px;
+  font-weight: 600;
+  color: rgba(230,237,243,0.35);
+  letter-spacing: 1px;
+}
+.brand-layer .slide-tag {
+  position: absolute;
+  top: 28px; left: 36px;
+  font-size: 12px;
+  color: rgba(230,237,243,0.3);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.brand-layer .page-num {
+  position: absolute;
+  bottom: 28px; right: 36px;
+  font-size: 13px;
+  color: rgba(230,237,243,0.3);
+}
+.brand-layer .source-tag {
+  position: absolute;
+  bottom: 28px; left: 36px;
+  font-size: 12px;
+  color: rgba(230,237,243,0.25);
+  letter-spacing: 1px;
+}
+
+/* ===== 标题关键词高亮 ===== */
+.kw-blue   { color: var(--accent1); }
+.kw-orange { color: var(--accent2); }
+.kw-purple { color: var(--accent3); }
+.kw-green  { color: var(--accent4); }
+.kw-red    { color: var(--accent5); }
+
+/* ===== 微光分隔线 ===== */
+.glow-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(88,166,255,0.3), transparent);
+  margin: 20px 0;
+}
+
+/* ===== 网格背景（可选叠加）===== */
+.grid-overlay {
+  background-image:
+    linear-gradient(rgba(88,166,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(88,166,255,0.03) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+```
+
+**设计规则：**
+- 背景纯深色 `#0d1117`，绝不用浅色或灰色背景
+- 每张卡片必须有 3px 彩色左边框，颜色从 5 色强调轮换
+- `backdrop-filter: blur(12px)` 给卡片玻璃质感
+- 标题中的关键词用 `.kw-*` 高亮，一个标题 1~2 个关键词
+- 品牌层（`.brand-layer`）每张 slide 必须包含，透明度 25~35%，不抢内容
+- 正文用 Noto Sans SC，标签/代码用 Source Code Pro，标题用 DM Sans
+- 每页信息密度高：≥ 4 个信息块（卡片/列表项/数据点）
+- 颜色使用大胆：同一页可以出现 2~3 种强调色
+
+---
+
+### 主题 9 竖版覆盖
+
+```css
+#deck[data-h="1920"] {
+  --size-hero:    115px;  --size-display: 96px;
+  --size-h1:      58px;   --size-h2:      38px;
+  --size-body:    26px;   --size-label:   19px;
+  --size-caption: 16px;   --pad-slide:    60px;
+}
 ```
