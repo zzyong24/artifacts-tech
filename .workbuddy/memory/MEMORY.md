@@ -26,10 +26,17 @@
 - **提词器留白优化**：顶部 padding 改为 50vh，Slide 跳转锚点落在屏幕 40% 处（中间偏上），视线固定在中间不用追顶部
 - **双栏对照模式（2026-03-27）**：提词器支持左提纲稿 + 右逐字稿同步滚动；D 键切换对照模式；加载逐字稿后自动开启；右栏按进度比例同步，也可独立手动滚动；Slide 跳转时两栏同步定位
 
+## 仓库结构（2026-03-27 拆分）
+- **框架仓库**（公开）：`git@github.com:zzyong24/artifacts-tech.git` → 本地 `/Users/zyongzhu/Workbase/artifacts-tech/`
+- **作品仓库**（私有）：`git@github.com:zzyong24/my-techs.git` → 本地 `/Users/zyongzhu/Workbase/artifacts-tech/works/`
+- works/ 目录就是 my-techs 的根目录，两个 git 仓库嵌套但互不干扰（框架 .gitignore 排除 `[0-9][0-9]-*/`）
+- 提交规则：改框架 → artifacts-tech/ 提交；改作品 → works/ 提交推送到 my-techs
+
 ## 已有作品
 - `01-text-is-interface`：用 GSAP 实现全部动画，效果好
 - `02-sop-to-skills`：引入了 GSAP 但实际全用 CSS transition，动画质量较弱；提词器联动已于 2026-03-26 补加（拦截 goto/advance，BroadcastChannel slide-sync）
 - `03-made-to-stick`：口播稿 + index.html 均已生成（2026-03-26），来源《让创意更有黏性》读书笔记，8 个 Slide，主题「知识的诅咒 + SUCCESs 六原则」，主题1手绘创意风格，GSAP 动画，提词器联动已内嵌
+- `04-ai-content-system`：主题「用 AI 搭内容系统：凌晨两点半的故事」，7 张 Slide 深色极简风，含四处对话截图插入点 + WorkBuddy 软植入
 
 ## 提示词优化记录（2026-03-26）
 **问题**：`gen-slides.md` 原来只写"GSAP 使用本地文件"，没有指导模型何时该用 GSAP，导致模型走最省力的 CSS 路线。

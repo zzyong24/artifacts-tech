@@ -71,11 +71,11 @@ cp .claude/artifacts.config.example.json .claude/artifacts.config.json
 > **必须用 HTTP 服务访问，不能直接双击打开 HTML**（BroadcastChannel API 需要同源）
 
 ```bash
-node tools/server.js
-# 默认端口 8888
+python3 -m http.server 8889
+# 默认端口 8889
 ```
 
-访问 `http://localhost:8888/works/` 查看作品导航页。
+访问 `http://localhost:8889/works/` 查看作品导航页。
 
 ---
 
